@@ -159,7 +159,7 @@ d_QR <- user(7)    #days in ICU before recovery (given recovery)
 #Kappa <- user(0.23)   #probability hospitalized (H) requires ICU (vs. recovers)
 #Delta <- user(0.06)   #probability ICU (Q) patient dies
 p_QV <- user(0.667)   #probability in ICU and requires ventilation
-r <- user(0.25)
+#r <- user(0.25)
 
 ### Other variables
 #R0 <- user(2.2)     #Current estimates from other models
@@ -201,3 +201,10 @@ Delta_t[] <- user()# R0 * ((Alpha/d_IH)+((1-Alpha)/d_IR))
 Delta_y[] <- user()
 dim(Delta_t) <- user()
 dim(Delta_y) <- user()
+
+r <- interpolate(r_t, r_y,"linear")
+r_t[] <- user()
+r_y[] <- user()
+dim(r_t) <- user()
+dim(r_y) <- user()
+
