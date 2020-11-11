@@ -702,7 +702,7 @@ plot.param.t <- function(ABC_out=ABC_out, endDatePlot=endDatePlot){
   traj.CI <- r_plot
   vars.to.plot <- "r_t"
   data.in <- NULL
-  y.max.in <- 0.2
+  y.max.in <- 1
   y.lab.in <- "r(t)"
   chart.title <- "Fraction of observed infections r(t)"
   r_t_plot <- plot.together(traj.CI=traj.CI, data.in=data.in, endDatePlot=endDatePlot, vars.to.plot = vars.to.plot, y.lab.in=y.lab.in, y.max.in=y.max.in, chart.title=chart.title)

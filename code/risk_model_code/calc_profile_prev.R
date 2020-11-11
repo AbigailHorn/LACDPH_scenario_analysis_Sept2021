@@ -36,7 +36,7 @@ sample.pop.df <- sample.pop.df %>% dplyr::select(-c(diabetes,hypertension,copd,c
 sample.pop.df$any.comb <- any.comb
 
 ### Count population prevalence of profiles (much faster with as.matrix())
-profiles <- as.matrix(dplyr::select(Pr.H.filter, -1))
+profiles <- X.mat
 sample.pop.table <- as.matrix(sample.pop.df)
 
 profile.cnt <- c(rep(0,dim(profiles)[1]))

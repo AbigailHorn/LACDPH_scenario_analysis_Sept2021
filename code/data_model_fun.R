@@ -126,23 +126,23 @@ correlated.param.SIM <- function(ABC.out.mat,iter,time.steps) {
 
   TEST.out <- vector("list", nrow(ABC.out.mat))
 
-  for (i in 1:nrow(ABC.out.mat)) {
+  for (idx in 1:nrow(ABC.out.mat)) {
 
     ### PARAMETER ESTIMATES FROM ABC
 
-    R0 <- ABC.out.mat[i,1]
-    r1 <- ABC.out.mat[i,2]
-    start_time <- round(ABC.out.mat[i,3])
-    R0_redux1 <- ABC.out.mat[i,4]
-    Delta1 <- ABC.out.mat[i,5]
-    Alpha1 <- ABC.out.mat[i,6]
-    Kappa1 <- ABC.out.mat[i,7]
-    p_V <- ABC.out.mat[i,8]
-    R0_redux2 <- ABC.out.mat[i,9]
-    Delta2 <- ABC.out.mat[i,10]
-    Alpha2 <- ABC.out.mat[i,11]
-    Kappa2 <- ABC.out.mat[i,12]
-    r2 <- ABC.out.mat[i,13]
+    R0 <- ABC.out.mat[idx,1]
+    r1 <- ABC.out.mat[idx,2]
+    start_time <- round(ABC.out.mat[idx,3])
+    R0_redux1 <- ABC.out.mat[idx,4]
+    Delta1 <- ABC.out.mat[idx,5]
+    Alpha1 <- ABC.out.mat[idx,6]
+    Kappa1 <- ABC.out.mat[idx,7]
+    p_V <- ABC.out.mat[idx,8]
+    R0_redux2 <- ABC.out.mat[idx,9]
+    Delta2 <- ABC.out.mat[idx,10]
+    Alpha2 <- ABC.out.mat[idx,11]
+    Kappa2 <- ABC.out.mat[idx,12]
+    r2 <- ABC.out.mat[idx,13]
 
     ### BRING IN BETA_T ALPHA_T KAPPA_T DELTA_T FUNCTIONS
     fn_t_readin_code <- path(code.paper.dir, "fn_t_readin_code_FULL.R")
@@ -165,7 +165,7 @@ correlated.param.SIM <- function(ABC.out.mat,iter,time.steps) {
     TEST<-as.data.frame(plyr::rdply(iter, x$run(0:time.steps),.id="iter"))
 
     ## BIND INCLUDING OFFSETING OBSERVED DATA BY START DATE
-    TEST.out[[i]] <- cbind(data.frame(par.id = i, date = -start_time+TEST$step), TEST)
+    TEST.out[[idx]] <- cbind(data.frame(par.id = idx, date = -start_time+TEST$step), TEST)
   }
 
   ## ADD TO DATAFRAME OVER ALL PARAMETER VALUES

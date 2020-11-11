@@ -168,6 +168,22 @@ Estimate risk probabilities with baseline from epidemic model
 --->
 
 ```{r estimate-risk-integrated}
+
+##################################################
+## INPUTS: TIMES
+### Chosen times to run analysis at
+# t1 <- "2020-04-15"
+# t2 <- "2020-07-15"
+# t3 <- "2020-10-15"
+# table.dates <- c("Apr.15","Jul.15","Oct.15")
+t1 <- "2020-05-15"
+t2 <- "2020-07-15"
+t3 <- "2020-09-15"
+t4 <- "2020-10-15"
+table.dates <- c("May.15","Jul.15","Sep.15","Oct.15")
+times.dates <- as.Date(c(t1,t2,t3,t4))
+times <- c("t1","t2","t3","t4")
+
 ##################################################
 ## INPUTS: PROFILE FREQUENCY
 ### Estimated frequency of each risk profile
@@ -178,30 +194,37 @@ freq.PREV.q <- as.vector(profile.cnt.freq[,1])
 ### Read in JAM produced conditional effect estimates
 psi.mat = read.csv(path(data.dir, "psi.conditional.effect.estimates.csv"), sep=",", header=TRUE,row.names = 1)
 rownames(psi.mat) <- colnames(X.mat)
+psi.mat[1,] <- c(rep(-0.25,times=3))
+psi.mat[2,] <- c(rep(0,times=3))
 
 ##################################################
 ## INPUTS: OBSERVED LAC DATA ON ILLNESSES
 ### Observed LAC age prevalence in (I) infections
-n.dates.LAC.obs.age <- 3
+n.dates.LAC.obs.age <- length(times)
 freq.LAC.obs.age <- matrix(nrow=3, ncol=n.dates.LAC.obs.age)
-colnames(freq.LAC.obs.age) <- c("t1","t2","t3")
+colnames(freq.LAC.obs.age) <- times
 rownames(freq.LAC.obs.age) <- c("Age0.19","Age20.64","Age65.")
-freq.LAC.obs.age[,1] <- c(0.016, 0.75, 0.233)
-freq.LAC.obs.age[,2] <- c(0.089, 0.794, 0.117)
-freq.LAC.obs.age[,3] <- c(0.1, 0.8, 0.1)
+# freq.LAC.obs.age[,1] <- c(0.011, 0.750, 0.239)  # Apr15
+# freq.LAC.obs.age[,2] <- c(0.079, 0.794, 0.120)  # Jul15
+# freq.LAC.obs.age[,3] <- c(0.102, 0.784, 0.114)  # Oct15
+freq.LAC.obs.age[,1] <- c(0.035, 0.749, 0.216)  # May15
+freq.LAC.obs.age[,2] <- c(0.079, 0.794, 0.120)  # Jul15
+freq.LAC.obs.age[,3] <- c(0.099, 0.785, 0.116)  # Sep15
+freq.LAC.obs.age[,4] <- c(0.102, 0.784, 0.114)  # Oct15
 
 ##################################################
 ## INPUTS: EPIDEMIC MODEL
 ## Get mean estimates of Alpha(t), Kappa(t), Delta(t) at each time point 
+akd_table <- tables.out[[2]]
 table1 <- akd_table
-for (i in 1:2){  table1[i,] <- akd_table[i,] %>% mutate_if(is.character, function(x) unlist(strsplit(x, " "))[1])} 
-table2 <- as.data.frame(matrix(0,nrow=2,ncol=3))
-table2[1,] <- as.numeric(risk.probs.POSTERIORS[1,])
-table2[2,] <- as.numeric(risk.probs.POSTERIORS[2,])
-table2[3,] <- table2[2,]
-colnames(table2) <- colnames(risk.probs.POSTERIORS)
-rownames(table2) <- c("t1","t2","t3")
-risk.probs.POSTERIORS <- table2
+for (i in 1:2){  table1[i,] <- akd_table[i,] %>% mutate_if(is.character, function(x) unlist(strsplit(x, " "))[1])}
+table1 <- as.data.frame(apply(table1, 2, as.numeric)) 
+
+## Create a third column representing t3 (same values as t2)
+table1[3,] <- table1[2,]
+table1[4,] <- table1[2,]
+rownames(table1) <- times
+risk.probs.POSTERIORS <- table1
 
 ##################################################
 ## APPLY CODE TO GET ESTIMATE RISK PROBABILITIES WITH BASELINE FROM EPIDEMIC MODEL
@@ -230,7 +253,7 @@ source(clean_data_risk_estimates_LAC)
 #data.prev #used for CFR/IFR calculation
 
 ## Note: The 5 risk groups are assigned within this code
-##       Currently are grouped according to Pr(D|Q).
+##       Currently are grouped according to Pr(D|I).
 ##       To modify the risk grouping cutoffs see the end of this code.
 
 ```
@@ -383,35 +406,33 @@ risk_table_print
 
 ABC.out.mat <- ABC_out$param
 time.steps = 400
-par.vec.length=100
 iter <- 10
+round.by <- 6
+# Requires data.prev from clean_data_risk_estimates_LAC
 
 ########################################################################
 ## risk.table.CFR.fn code found in clean_data_risk_estimates.R
 ########################################################################
 
-risk_table_CFR <- risk.table.CFR.IFR.dates(ABC.out.mat = ABC.out.mat, time.steps = time.steps, par.vec.length = par.vec.length, iter=iter, data.prev = data.prev)
+risk_table_CFR <- risk.table.CFR.IFR.dates(ABC.out.mat=ABC.out.mat, time.steps=time.steps, iter=iter, data.prev=data.prev, round.by=round.by)
+risk_table_CFR <- risk_table_CFR[,c("Profile","riskprofile","age","comorbidity","BMI","smoking","freq.PREV.q", paste0("freq.I.",times),            
+                                    paste0("CFR.",times),paste0("IFR.",times))]
+#vars <- c("freq.I.","CFR.","IFR.")
+#apply(expand.grid(vars, times), 1, paste, collapse="")
+#risk_table_CFR <- filter(risk_table_CFR, "I.prev.t1" > 0.000000004)  # FILTER PROFILES TO SHOW IN THE TABLE TO ONLY THOSE > 0 PREVALENCE
+risk_table_CFR <- arrange(risk_table_CFR, desc(risk_table_CFR$"CFR.t1"))
+risk_table_CFR <- risk_table_CFR %>% mutate_if(is.numeric, round, digits=5)
+colnames(risk_table_CFR)[colnames(risk_table_CFR)=="freq.PREV.q"] <- "Pop.Prev"
+colnames(risk_table_CFR)[colnames(risk_table_CFR)=="riskprofile"] <- "Group"
+colnames(risk_table_CFR)[colnames(risk_table_CFR)==paste0("freq.I.",times)] <- paste0("Inf.",times.dates)
+colnames(risk_table_CFR) <- c(colnames(risk_table_CFR)[1:7], paste0("Inf.",table.dates), paste0("CFR.",table.dates), paste0("IFR.",table.dates))
+risk_table_CFR <- filter(risk_table_CFR, "Pop.Prev" > 0.0000001)  # FILTER PROFILES TO SHOW IN THE TABLE TO ONLY THOSE > 0 PREVALENCE
 
-#risk_table_CFR <- filter(risk_table_CFR, "LA County" > 0.0004)
-#risk_table_CFR <- arrange(risk_table_CFR, desc(risk_table_CFR$"CFR.median"))
-
-risk_table_CFR <- risk_table_CFR %>% select(c(1,10,14,18:22,25:28))   #select(-c(8:15)) 
-risk_table_CFR$"Pop.Prev" <- profile.cnt.SPAs[,9]
-risk_table_CFR <- filter(risk_table_CFR, I.prev.Apr.20 > 0.000000004)  # FILTER PROFILES TO SHOW IN THE TABLE TO ONLY THOSE > 0 PREVALENCE
-risk_table_CFR <- arrange(risk_table_CFR, desc(risk_table_CFR$"CFR.Apr.20"))
-risk_table_CFR <- risk_table_CFR %>% mutate_if(is.numeric, round, digits=4)
 #risk_table_CFR <- risk_table_CFR %>% filter(Pop.Prev>.011)
-
-
-risk_table_CFR2 <- risk_table_CFR[,c(1,8,4,5,6,7,13,2,3,9,10,11,12)]
-colnames(risk_table_CFR2)[8] <- "Ill.Apr.20"
-colnames(risk_table_CFR2)[9] <- "Ill.Jul.20"
-colnames(risk_table_CFR2)[2] <- "Group"
-#risk_table_CFR2$Profile = NULL
 
 unit.scale = function(x) (x - min(x)) / (max(x) - min(x))
 
-risk_table_CFR.ft <- formattable(risk_table_CFR2, align="c",
+risk_table_CFR.ft <- formattable(risk_table_CFR, align="c",
             #align = c(rep("c", 9)),
             list(
   `age`= color_tile('yellow', 'darkorange'),
@@ -420,22 +441,66 @@ risk_table_CFR.ft <- formattable(risk_table_CFR2, align="c",
   `comorbidity`= color_tile('darkgrey', 'transparent'),
   `Group`= color_tile('red', 'green'),
   `Pop.Prev`= color_bar('cornflowerblue', fun = unit.scale),
-  `Ill.Apr.20`= color_bar('violet', fun = unit.scale),
-  `Ill.Jul.20`= color_bar('lightpink', fun = unit.scale),
-  `CFR.Apr.20`= color_bar('violet', fun = unit.scale),
-  `CFR.Jul.20`= color_bar('lightpink', fun = unit.scale),
-  `IFR.Apr.20`= color_bar('violet', fun = unit.scale),
-  `IFR.Jul.20`= color_bar('lightpink', fun = unit.scale)
-  #`CFR.low_95`= color_bar('violet', fun = unit.scale),
-  #`CFR.up_95`= color_bar('violet', fun = unit.scale),
-  #`IFR.median`= color_bar('lightpink', fun = unit.scale),
-  #`IFR.low_95`= color_bar('lightpink', fun = unit.scale),
-  #`IFR.up_95`= color_bar('lightpink', fun = unit.scale)
+    `Inf.Apr.15`= color_bar('red', fun = unit.scale),
+  `Inf.Jul.15`= color_bar('violet', fun = unit.scale),
+  `Inf.Oct.15`= color_bar('lightpink', fun = unit.scale),
+  `CFR.Apr.15`= color_bar('red', fun = unit.scale),
+  `CFR.Jul.15`= color_bar('violet', fun = unit.scale),
+  `CFR.Oct.15`= color_bar('lightpink', fun = unit.scale),
+  `IFR.Apr.15`= color_bar('red', fun = unit.scale),
+  `IFR.Jul.15`= color_bar('violet', fun = unit.scale),
+  `IFR.Oct.15`= color_bar('lightpink', fun = unit.scale)
 ))
 risk_table_CFR.ft
 
-#export_formattable(risk_table_CFR.ft, path(code.dir,"integrated/figs/TEST4.PROFILES_risk_table_integrated.png"))
-#export_formattable(risk_table_CFR.ft, path(code.dir,"integrated/figs/use_in_paper/HIPREV/CFR_PROFILES_2.png"))
+export_formattable <- function(f, file, width = "110%", height = NULL,#, 
+                               background = "white", delay = 0.2)
+    {
+      w <- as.htmlwidget(f, width = width, height = height)
+      path <- html_print(w, background = background, viewer = NULL)
+      url <- paste0("file:///", gsub("\\\\", "/", normalizePath(path)))
+      webshot(url,
+              file = file,
+              selector = ".formattable_widget",
+              delay = delay)
+}
+
+
+# export_formattable <- function(f, file, width = "900", height = "800",#, 
+#                                background = "white", delay = 0.2)
+#     {
+#       w <- as.htmlwidget(f, width = "100%", height = NULL)
+#       path <- html_print(w, background = background, viewer = NULL)
+#       url <- paste0("file:///", gsub("\\\\", "/", normalizePath(path)))
+#       webshot(url,
+#               file = file,
+#               selector = ".formattable_widget",
+#               delay = delay)
+# }
+
+# f <- risk_table_CFR.ft
+# w <- as.htmlwidget(f, 
+#   width = "800", 
+#   height = "800",
+#   sizingPolicy = htmlwidgets::sizingPolicy(
+#     viewer.padding = 0,
+#     viewer.paneHeight = 'maximize',
+#     #viewer.paneWidth = 'maximize',
+#     browser.fill = TRUE
+#   ))
+# 
+# as.htmlwidget(
+#   formattable(mtcars, list(mpg = formatter("span",
+#    style = x ~ style(display = "block",
+#    "border-radius" = "4px",
+#    "padding-right" = "4px",
+#    color = "white",
+#    "background-color" = rgb(x/max(x), 0, 0))))
+#   )
+# )
+
+
+#export_formattable(risk_table_CFR.ft, path(output.dir,"TEST_CFRIFR.png"))
 
 
 ```

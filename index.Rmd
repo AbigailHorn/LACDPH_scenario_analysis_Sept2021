@@ -91,6 +91,8 @@ result.dir = here("results/")
 fig.dir = here("figs/")
 output.dir = here("output/")
 code.paper.dir=here("code/")
+code.risk.dir=here("code/risk_model_code/")
+code.scenarios.dir=here("code/scenarios_code/")
 ```
 
 <!--Set options-->
@@ -153,8 +155,11 @@ summarydata <- sum.stats.SIMTEST(latest_data,include.R = FALSE)
 model.R <- model.1sim.stats.no.R  # From supporting_functions
 
 ### NUMBER OF OUTPUTS
-n_calibration = 1000
-n_rec = 1000
+# n_calibration = 10000
+# n_rec = 2000
+
+n_calibration = 10000
+n_rec = 2000
 
 ## FIT MODEL
 ABC_out<-ABC_mcmc(method="Marjoram",model=model.R,prior=prior.par,
@@ -199,19 +204,28 @@ plot.all.variables
 
 date.in <- seq(as.Date("2020-03-01"), as.Date("2020-11-01"), by="2 weeks")
 
-CFR.IFR.plots.out <- CFR.IFR.plots(traj.CI=traj.0, date.in=date.in, y.max.CFR=.1, y.max.IFR = .02)
+CFR.IFR.plots.out <- CFR.IFR.plots(traj.CI=traj.0, date.in=date.in)
 CFR.plot <- CFR.IFR.plots.out[[1]]
 IFR.plot <- CFR.IFR.plots.out[[2]]
+CFR.plot+IFR.plot
+
 tables.out <- summary.table.param.CFR.IFR(traj.CI=traj.0, ABC_out=ABC_out, date.in=date.in, use.mean.select = 1, round.by.in = 4)
 table.epi <- tables.out[[1]]
 table.epi
 tables.out[[2]]
 
-plot.all.variables
-CFR.plot+IFR.plot
+#plot.all.variables
 
 Fig3.plots <- plot.param.t(ABC_out = ABC_out)
 Fig3.plots[[3]]
+
+
+var.to.plot <- "I"
+yesR.p.I.0 <- plot.model.single(traj.CI=traj.0, data.in=data.in, init.date.data="2020-03-01", date.offset.4plot=0, 
+                           time.steps.4plot=time.steps.4.plot, ymax=50000, plot.capacity=NULL, var.to.plot=var.to.plot,use.title=NULL,
+                           scenario=scenario, intervention_date=intervention_date, sd.redux=sd.redux)
+ggplotly(yesR.p.I.0)
+
 
 ```
 
@@ -300,6 +314,7 @@ if (print.output==TRUE){
   plot.all.variables
   dev.off()
 }
+
 ```
 
 ```{r}
