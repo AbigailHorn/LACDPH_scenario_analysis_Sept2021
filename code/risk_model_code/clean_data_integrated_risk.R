@@ -106,15 +106,15 @@ data.FULL$comorbidity <- factor(data.FULL$comorbidity, levels = c("Comorbidity",
 
 data.FULL$ComorbidityYes <- NULL
 
-## 4) Create Risk Profile Groupings ##################################################################
-### NOTE: Grouping done by P(D|I) probabilities
-data.FULL$riskprofile <- "Blank"
-data.FULL$riskprofile[data.FULL$"P(D|I).t1"<.01] <- "Risk 5"
-data.FULL$riskprofile[(data.FULL$"P(D|I).t1"<.05) & (data.FULL$"P(D|I).t1">.01)] <- "Risk 4"
-data.FULL$riskprofile[(data.FULL$"P(D|I).t1"<.1) & (data.FULL$"P(D|I).t1">.05)] <- "Risk 3"
-data.FULL$riskprofile[(data.FULL$"P(D|I).t1"<.2) & (data.FULL$"P(D|I).t1">.1)] <- "Risk 2"
-data.FULL$riskprofile[(data.FULL$"P(D|I).t1">.2)] <- "Risk 1"
-data.FULL$riskprofile <- factor(data.FULL$riskprofile, levels = c("Risk 1", "Risk 2", "Risk 3", "Risk 4", "Risk 5" ))
+# ## 4) Create Risk Profile Groupings ##################################################################
+# ### NOTE: Grouping done by P(D|I) probabilities
+# data.FULL$riskprofile <- "Blank"
+# data.FULL$riskprofile[data.FULL$"P(D|I).t1"<.01] <- "Risk 5"
+# data.FULL$riskprofile[(data.FULL$"P(D|I).t1"<.05) & (data.FULL$"P(D|I).t1">.01)] <- "Risk 4"
+# data.FULL$riskprofile[(data.FULL$"P(D|I).t1"<.1) & (data.FULL$"P(D|I).t1">.05)] <- "Risk 3"
+# data.FULL$riskprofile[(data.FULL$"P(D|I).t1"<.2) & (data.FULL$"P(D|I).t1">.1)] <- "Risk 2"
+# data.FULL$riskprofile[(data.FULL$"P(D|I).t1">.2)] <- "Risk 1"
+# data.FULL$riskprofile <- factor(data.FULL$riskprofile, levels = c("Risk 1", "Risk 2", "Risk 3", "Risk 4", "Risk 5" ))
 
 ##############################################################################################################
 ##############################################################################################################
@@ -136,11 +136,13 @@ data.prev <- arrange(data.prev, data.prev$Profile)
 ## Function for risk table with CFR and IFR
 ##############################################################################################################
 
-risk.table.CFR.IFR.dates <- function(ABC.out.mat=ABC.out.mat, time.steps=time.steps, iter=iter, data.prev=data.prev, round.by=round.by) {
+risk.table.CFR.IFR.dates <- function(ABC.out.mat=ABC.out.mat, time.steps=time.steps, iter=iter, data.prev=data.prev, times.dates=times.dates, round.by=round.by) {
 
   ## MODEL OUTPUT TO PLOT
 
-  ### FINISH HERE
+  # ABC.out.mat.test = ABC.out.mat[1:100,]
+  # model.out <- correlated.param.SIM(ABC.out.mat=ABC.out.mat.test,iter=iter,time.steps=time.steps)
+  
   model.out <- correlated.param.SIM(ABC.out.mat=ABC.out.mat,iter=iter,time.steps=time.steps)
     
   # Align dates
@@ -216,12 +218,27 @@ risk.table.CFR.IFR.dates <- function(ABC.out.mat=ABC.out.mat, time.steps=time.st
 
   table.CFR.IFR <- cbind(CFR.OUT %>% select(c(paste0("CFR.",times))),IFR.OUT %>% select(c(paste0("IFR.",times))))
   table.CFR.IFR$Profile <- Profile
-  data.Pr.CFR.IFR <- data.FULL %>% select(c(paste0("freq.I.",times), "Profile", "age","BMI","smoking","comorbidity","riskprofile","freq.PREV.q"))
+  data.Pr.CFR.IFR <- data.FULL %>% select(c(paste0("freq.I.",times), "Profile", "age","BMI","smoking","comorbidity","freq.PREV.q"))
   data.Pr.CFR.IFR <- merge(data.Pr.CFR.IFR, table.CFR.IFR, by = "Profile")
 
   # FILTER PROFILES TO SHOW IN THE TABLE TO ONLY THOSE > 0 PREVALENCE
   #data.Pr.CFR.IFR <- filter(data.Pr.CFR.IFR, paste0("freq.I.t1") > 0.000000004)
-
+  
+  ########################################
+  ## Add risk group
+  ## Note: Groupings done by CFR on t1
+  ########################################
+  
+  riskprofile <- "Blank"
+  riskprofile[data.Pr.CFR.IFR$"CFR.t1"<.01] <- "Risk 5"
+  riskprofile[(data.Pr.CFR.IFR$"CFR.t1"<.04) & (data.Pr.CFR.IFR$"CFR.t1">.01)] <- "Risk 4"
+  riskprofile[(data.Pr.CFR.IFR$"CFR.t1"<.08) & (data.Pr.CFR.IFR$"CFR.t1">.04)] <- "Risk 3"
+  riskprofile[(data.Pr.CFR.IFR$"CFR.t1"<.16) & (data.Pr.CFR.IFR$"CFR.t1">.08)] <- "Risk 2"
+  riskprofile[(data.Pr.CFR.IFR$"CFR.t1">.16)] <- "Risk 1"
+  riskprofile <- factor(riskprofile, levels = c("Risk 1", "Risk 2", "Risk 3", "Risk 4", "Risk 5" ))
+  
+  data.Pr.CFR.IFR <- tibble::add_column(data.Pr.CFR.IFR, riskprofile, .after = "Profile")
+  
   ##### Arrange
   data.Pr.CFR.IFR <- arrange(data.Pr.CFR.IFR, desc(data.Pr.CFR.IFR$"CFR.t1"))
 

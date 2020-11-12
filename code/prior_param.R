@@ -2,8 +2,8 @@
 
 prior.st <- c("unif",44,46)
 
-R0 <- 3.7
-prior.R0 <- c("normal",R0,.001)
+R0 <- 3.6
+prior.R0 <- c("normal",R0,.01)
 
 R0_redux1 <- .21 
 R0_redux2 <- .33
