@@ -71,8 +71,9 @@ dev.off()
 
 vars.to.plot <- c("H_new", "D_new")
 chart.title <- "Daily Hospitalizations and Deaths"
-new.healthcare.variables <- plot.together(traj.CI=traj.CI, data.in=data.in, time.steps.4plot = time.steps.4plot, vars.to.plot = vars.to.plot)
+new.healthcare.variables <- plot.together.OLD(traj.CI=traj.0, data.in=data.in, time.steps.4plot = 300, vars.to.plot = vars.to.plot)
 new.healthcare.variables
+
 pdf(file = path(fig.dir, "new.healthcare.variables.pdf"), width=10, height =10)
 new.healthcare.variables
 dev.off()
@@ -94,7 +95,7 @@ cum.healthcare.variables
 dev.off()
 
 
-plot.together <- function(traj.CI=traj.CI, data.in=data.in, init.date.data=NULL, date.offset.4plot=NULL, time.steps.4plot, vars.to.plot) {
+plot.together.OLD <- function(traj.CI=traj.CI, data.in=data.in, init.date.data=NULL, date.offset.4plot=NULL, time.steps.4plot, vars.to.plot) {
 
   if(is.null(init.date.data)) {
     init.date.data <- "2020-03-01"}

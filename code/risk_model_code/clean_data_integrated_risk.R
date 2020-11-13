@@ -2,7 +2,7 @@
 
 ############################################################################################################
 ############################################################################################################
-## CLEAN AND PROCESS DATA FOR RISK ESITMATES
+## CLEAN AND PROCESS DATA FOR RISK ESTIMATES
 ############################################################################################################
 ############################################################################################################
 
@@ -244,6 +244,58 @@ risk.table.CFR.IFR.dates <- function(ABC.out.mat=ABC.out.mat, time.steps=time.st
 
   return(data.Pr.CFR.IFR)
 
+}
+
+CFR_to_print <- function(risk_table_CFR_FULL, table.dates, times.dates, round.by, filter.by){
+  risk_table_CFR <- risk_table_CFR_FULL[,c("Profile","riskprofile","age","comorbidity","BMI","smoking","freq.PREV.q", paste0("freq.I.",times),            
+                                           paste0("CFR.",times),paste0("IFR.",times))]
+  risk_table_CFR <- arrange(risk_table_CFR, desc(risk_table_CFR$"CFR.t1"))
+  risk_table_CFR <- risk_table_CFR %>% mutate_if(is.numeric, round, digits=round.by)
+  colnames(risk_table_CFR)[colnames(risk_table_CFR)=="freq.PREV.q"] <- "Pop.Prev"
+  colnames(risk_table_CFR)[colnames(risk_table_CFR)=="riskprofile"] <- "Group"
+  colnames(risk_table_CFR)[colnames(risk_table_CFR)==paste0("freq.I.",times)] <- paste0("Inf.",times.dates)
+  colnames(risk_table_CFR) <- c(colnames(risk_table_CFR)[1:7], paste0("Inf.",table.dates), paste0("CFR.",table.dates), paste0("IFR.",table.dates))
+  risk_table_CFR <- filter(risk_table_CFR, Pop.Prev > filter.by)  # FILTER PROFILES TO SHOW IN THE TABLE TO ONLY THOSE > 0 PREVALENCE
+  return(risk_table_CFR)
+}
+
+#############################################
+## Grab the population-average CFR and IFR
+
+pop_avg_median <- function(tables.out, risk_table_CFR, times.dates){
+  cfr_table <- tables.out[[3]]
+  for (i in 1:nrow(cfr_table)){ 
+    table2[i,] <- cfr_table[i,] %>% mutate_if(is.character, function(x) unlist(strsplit(x, " "))[1])
+  }
+  table2 <- as.data.frame(apply(table2[,1:2], 2, as.numeric)) 
+  colnames(table2) <- c("CFR","IFR")
+  rownames(table2) <- rownames(cfr_table)
+  
+  times.dates <- as.character(times.dates)
+  pop_avg <- c("Pop-Avg", rep("",times=9), table2[times.dates,"CFR"], table2[times.dates,"IFR"])
+  names(pop_avg) <- colnames(risk_table_CFR)
+  pop_avg <- as.data.frame(t(pop_avg))
+  return(pop_avg)
+}
+
+########################################################################
+# Probabilities of severe illness by risk profile table
+# Requires risk_table_CFR_FULL and Profiles and Pr.OUT
+########################################################################
+
+probs_to_print <- function(risk_table_CFR_FULL, Profile,Pr.OUT, table.dates, times.dates, round.by, filter.by){
+  profiles_table <- select(risk_table_CFR_FULL, -c( apply(expand.grid(c("freq.I.","CFR.","IFR."),times), 1, paste, collapse="")))
+  profiles_table[,ncol(profiles_table)+1] <- select(risk_table_CFR_FULL,"CFR.t1")
+  probs_table <- as.data.frame(cbind(Profile,Pr.OUT)) %>% select(-c(paste0("P(D|I).",times)))
+  probs_table_FULL <- as.data.frame(merge(profiles_table,probs_table,by="Profile"))
+  probs_table_FULL <- probs_table_FULL[,c( colnames(profiles_table), paste0("P(H|I).",times), paste0("P(Q|H).",times), paste0("P(D|Q).",times) )]
+  probs_table_FULL <- arrange(probs_table_FULL, desc(probs_table_FULL$"CFR.t1")) %>% mutate_if(is.numeric, round, digits=round.by)
+  probs_table_FULL$CFR.t1 <- NULL
+  colnames(probs_table_FULL)[colnames(probs_table_FULL)=="freq.PREV.q"] <- "Pop.Prev"
+  colnames(probs_table_FULL)[colnames(probs_table_FULL)=="riskprofile"] <- "Group"
+  colnames(probs_table_FULL) <- c(colnames(probs_table_FULL)[1:7], paste0("P(H|I).",table.dates), paste0("P(Q|H).",table.dates), paste0("P(D|Q).",table.dates))
+  probs_table_FULL <- filter(probs_table_FULL, Pop.Prev > 0.00001)  # FILTER PROFILES TO SHOW IN THE TABLE TO ONLY THOSE > 0 PREVALENCE
+  return(probs_table_FULL)
 }
 
 print("Clean data, get CFR/IFR table: Done.")

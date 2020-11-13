@@ -770,4 +770,38 @@ CFR.IFR.plots <- function(traj.CI, date.in){
 }
 
 
+########################################################################################
+## PLOTTING COMPARTMENTAL VARIABLES
+########################################################################################
+
+plot.compartments <- function(traj.CI.in){
+  
+  vars.to.plot <- c("I","Itot")
+  chart.title <- "Current Observed and Estimated Total Illnesses"
+  traj.CI <- traj.CI.in
+  y.max.in <- 200000
+  y.lab.in <- "Number infected"
+  curr.illness.variables <- plot.together(traj.CI=traj.CI, data.in=NULL, endDatePlot=endDatePlot, vars.to.plot = vars.to.plot, y.lab.in=y.lab.in, y.max.in=y.max.in, chart.title=chart.title)
+  curr.illness.variables
+  
+  
+  vars.to.plot <- c("Htot","Q", "V","D_new")
+  traj.CI <- traj.CI.in
+  y.max.in <- 4000
+  y.lab.in <- "Number in compartment"
+  chart.title <- "Healthcare Variables"
+  curr.healthcare.variables <- plot.together(traj.CI=traj.CI, data.in=NULL, endDatePlot=endDatePlot, vars.to.plot = vars.to.plot, y.lab.in=y.lab.in, y.max.in=y.max.in, chart.title=chart.title)
+  
+  plot.out <- vector(mode="list", length=2)
+  plot.out[[1]] <- curr.illness.variables
+  plot.out[[2]] <- curr.healthcare.variables
+  
+  return(plot.out)
+}
+
+
+
+
+
+
 
