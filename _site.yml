@@ -1,0 +1,16 @@
+name: "covid-paper-website"
+output_dir: "."
+navbar:
+  title: "Risk-stratified COVID-19 policy analysis for Los Angeles County through an integrated risk and stochastic epidemiological model"
+  left:
+    - text: "Paper output"
+      href: index.html
+  right:
+    - icon: fa-github fa-lg
+      href: https://github.com/AbigailHorn/COV2-LA
+    - text: "COVID-19 Website"
+      href: https://github.com/USCbiostats/COVID19
+output:
+  html_document:
+    theme: cosmo
+    css: styles.css
