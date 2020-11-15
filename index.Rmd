@@ -98,9 +98,9 @@ code.scenarios.dir=here("code/scenarios_code/")
 <!--Set global options-->
 
 ```{r options, include=FALSE}
-print.output <- FALSE
+print.output <- TRUE
 days.truncate <- 15
-endDatePlot <- as.Date("2020-11-01")
+endDatePlot <- as.Date("2020-12-01")
 ```
 
 
@@ -611,9 +611,11 @@ psi.mat[1,] <- c(rep(-1,times=3))
 calc_integrated_risk_model<- path(code.risk.dir, "integrated_risk_model.R")
 source(calc_integrated_risk_model)
 
+Pr.freq.FUN.out <- Pr.freq.FUN(X.mat=X.mat, freq.PREV.q = freq.PREV.q, 
+                               freq.LAC.obs.age=freq.LAC.obs.age, logit.SEIR.est=logit.SEIR.est,psi.mat=psi.mat)
 ### OUTPUTS
-Pr.OUT <- Pr.OUT
-freq.OUT <- freq.OUT
+Pr.OUT <- Pr.freq.FUN.out[[1]]
+freq.OUT <- Pr.freq.FUN.out[[2]]   
 
 ```
 
@@ -837,56 +839,100 @@ p.prev.smoking.stage.DATES
 
 
 
-# SCENARIOS
+# Scenarios
 
-## Scenarios: Get Alpha, Kappa, Delta with populations protected
-```{r scenarios, eval=FALSE,include=FALSE}
+<!---
+Scenarios: Get Alpha, Kappa, Delta with populations protected
+--->
+
+```{r scenarios, include=FALSE}
 
 ##################################################
-## INPUTS: EPIDEMIC MODEL
-percent.to.remove <- c(1,0.5,0) # Remove 100%
+## SOURCE SCENARIOS FUNCTIONS
+scenarios_functions <- path(code.scenarios.dir, "scenarios_fun.R")
+source(scenarios_functions)
+
+##################################################
+## INPUTS for getting % removed for various scenarios
+percent.to.remove <- c(0,0.5,1) #c(1,0.5,0) 
 factor.to.remove <- 4  # Age.65.
 
 ##################################################
-## APPLY CODE TO GET ESTIMATE RISK PROBABILITIES WITH BASELINE FROM EPIDEMIC MODEL
-calc_scenarios_integrated <- path(code.dir, "integrated/integrated_scenarios_calc_filter_avg.R")
-#r_output(readLines(calc_scenarios_integrated))
-source(calc_scenarios_integrated)
+## Apply function for calculating decrease in Alpha Kappa Delta when protecting/removing 65+ from population
+
+weighted.avg.scenarios.overall <- 
+  weighted.avg.protect.SCENARIOS(X.mat=X.mat, freq.PREV.q = freq.PREV.q, 
+                                 freq.LAC.obs.age=freq.LAC.obs.age, logit.SEIR.est=logit.SEIR.est,
+                                 psi.mat=psi.mat,percent.to.remove=percent.to.remove,
+                                 factor.to.remove=factor.to.remove)
 
 ##################################################
-## OUTPUT
-weighted.avg.scenarios.overall
+## Name the scenarios
 
+protect.scenarios.mat <- matrix(NA, nrow=3, ncol=2)
+colnames(protect.scenarios.mat) <- c("index","protect.name")
+protect.scenarios.mat[,"index"] <- c(1:3)
+protect.scenarios.mat[,"protect.name"] <- rownames(weighted.avg.scenarios.overall)
+protect.scenarios.mat <- as.data.frame(protect.scenarios.mat)
+protect.scenarios.mat
 
+NPI.scenarios.mat <- matrix(NA, nrow=3, ncol=3)
+colnames(NPI.scenarios.mat) <- c("index","NPI.name","Beta_y_vals")
+NPI.scenarios.mat[,"index"] <- c(1:3)
+NPI.scenarios.mat[,"NPI.name"] <- c("NPI.None","NPI.Mod", "NPI.Obs")  #c("NPI.Obs","NPI.Mod","NPI.None")
+NPI.scenarios.mat[,"Beta_y_vals"] <- c("Beta_y_nothing", "Beta_y_moderate", "Beta_y" )  #c("Beta_y","Beta_y_moderate","Beta_y_nothing")
+NPI.scenarios.mat <- as.data.frame(NPI.scenarios.mat)
+NPI.scenarios.mat
+
+##################################################
+## Run the scenarios
+
+ABC.out.mat.scenarios = ABC.out.mat[c(1:100),]
+iter=10
+time.steps=400
+
+correlated.param.SCENARIOS.out <- 
+  correlated.param.SCENARIOS(ABC.out.mat=ABC.out.mat.scenarios,iter=iter,time.steps=time.steps,
+                             weighted.avg.scenarios=weighted.avg.scenarios.overall,
+                             protect.scenarios.mat=protect.scenarios.mat, NPI.scenarios.mat=NPI.scenarios.mat)
+
+##################################################
+## Plot the scenarios
+
+data.in <- latest_data %>% select("D")
+endDatePlot=as.Date("2020-11-15")
+vars.to.plot <- c("Itot","I", "Htot","D","CFRactual","CFRobs")
+traj.CI <- correlated.param.SCENARIOS.out
+filter.scenarios <- NULL
+
+plot.SCENARIOS.ALL <-  plot.SCENARIOS(traj.CI=traj.CI, data.in=data.in, endDatePlot=endDatePlot, vars.to.plot = vars.to.plot, filter.scenarios=filter.scenarios)
+
+filter.scenarios=c(4:9)
+plot.SCENARIOS.filter <-  plot.SCENARIOS(traj.CI=traj.CI, data.in=data.in, endDatePlot=endDatePlot, vars.to.plot = vars.to.plot, filter.scenarios=filter.scenarios)
+
+if (print.output==TRUE){
+  pdf(file = path(output.dir, "plot.SCENARIOS.ALL"), width=10, height =10)
+  plot.SCENARIOS.ALL
+  dev.off()
+  
+  pdf(file = path(output.dir, "plot.SCENARIOS.filter"), width=10, height =10)
+  plot.SCENARIOS.filter
+  dev.off()
+}
 ```
 
-## Scenarios: Run scenarios with populations protected and get plots
-```{r scenarios-get, eval=FALSE, include=FALSE}
+## Scenarios {.tabset}
 
-##################################################
-## APPLY CODE TO GET SCENARIOS WITH POPULATIONS PROTECTED
-scenarios_run <- path(code.dir, "integrated/scenarios_integrated_subpop_run.R")
-#r_output(readLines(scenarios_run))
-source(scenarios_run)
+### All scenarios
 
-## OUTPUT
-scenario.list <- list(traj.S1, traj.S2,traj.S3,traj.S4,traj.S5,traj.S6,traj.S7,traj.S8)
+```{r}
+plot.SCENARIOS.ALL
+```
 
-##################################################
-## APPLY CODE TO PLOT SCENARIOS
-scenarios_plot <- path(code.dir, "integrated/scenarios_integrated_subpop_plot.R")
-#r_output(readLines(scenarios_plot))
-source(scenarios_plot)
 
-## OUTPUT
-combined.plot <- ggpubr::ggarrange( plot.single.I[[1]], plot.single.I[[2]], plot.single.I[[3]], plot.single.I[[4]], plot.single.I[[5]], plot.single.I[[6]], plot.single.I[[7]], plot.single.I[[8]],
-           plot.single.H[[1]], plot.single.H[[2]], plot.single.H[[3]],   plot.single.H[[4]], plot.single.H[[5]],  plot.single.H[[6]],  plot.single.H[[7]], plot.single.H[[8]],
-           plot.single.D[[1]], plot.single.D[[2]], plot.single.D[[3]],   plot.single.D[[4]], plot.single.D[[5]],  plot.single.D[[6]],  plot.single.D[[7]], plot.single.D[[8]],
-           nrow=3, ncol=8 , common.legend = TRUE, legend = "bottom")
-combined.plot
+### Scenarios with NPI modifications
 
-## PRINT
-#ggpubr::ggexport(combined.plot, filename = path(code.dir, "integrated/figs/use_in_paper/scenarios8_integrated.pdf"), width=20,height=12)
-
+```{r}
+plot.SCENARIOS.filter
 ```
 

@@ -164,8 +164,8 @@ risk.table.CFR.IFR.dates <- function(ABC.out.mat=ABC.out.mat, time.steps=time.st
   
   ## Get CFR and IFR for each date
   n.profiles <- nrow(data.prev)
-  CFR.OUT <- vector("list", n.dates)
-  IFR.OUT <- vector("list", n.dates)
+  CFR.OUT <- vector("list", n.times)
+  IFR.OUT <- vector("list", n.times)
   
   for (t in 1:n.times){
     
@@ -208,9 +208,9 @@ risk.table.CFR.IFR.dates <- function(ABC.out.mat=ABC.out.mat, time.steps=time.st
   IFR.OUT <- do.call(cbind, IFR.OUT)
   
   # ### SANITY CHECKS: take weighted average of frequency of each profile and CFR, should equal population-average CFR
-  sum(CFR.OUT[,"CFR.t1"]*freq.OUT[,"freq.I.t1"])
-  sum(CFR.OUT[,"CFR.t2"]*freq.OUT[,"freq.I.t2"])
-  sum(CFR.OUT[,"CFR.t3"]*freq.OUT[,"freq.I.t3"])
+  # sum(CFR.OUT[,"CFR.t1"]*freq.OUT[,"freq.I.t1"])
+  # sum(CFR.OUT[,"CFR.t2"]*freq.OUT[,"freq.I.t2"])
+  # sum(CFR.OUT[,"CFR.t3"]*freq.OUT[,"freq.I.t3"])
   
   ########################################
   ## Create table output

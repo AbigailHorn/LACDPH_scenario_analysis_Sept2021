@@ -64,13 +64,6 @@ freq.ILL <- function(X.mat, freq.PREV.q, freq.LAC.obs.age, time){
   # MARGINALIZE: Get marginal frequency of each risk factor (BY AGE GROUPS ONLY)
   freq.PREV.p <- t(freq.PREV.q) %*% X.mat.AGE
 
-  # ## REMOVING AGE.65+
-  # freq.PREV.p[4]<- 0.0000001* freq.PREV.p[4]
-  # freq.PREV.p <- freq.PREV.p/sum(freq.PREV.p)
-
-  # # MARGINALIZE AGE ONLY
-  # freq.PREV.p.AGE <- as.vector(c(freq.PREV.p[,c(1:4)],rep(0,5) ))
-
   # Matrix multiply X.mat with marginal vector of risk factor prevalence frequencies FOR AGE ONLY to get the marginal AGE GROUP frequency in PREVALENCE corresponding to each profile
   marginal.PREV.freq.for.q <- X.mat.AGE %*% t(freq.PREV.p)
 
@@ -144,52 +137,57 @@ get.Pr.q <- function(model, time, logit.SEIR.est, X.mat, freq.q.IN,  psi.mat){
 ##################################################################################################################
 ##################################################################################################################
 
+#weighted.avg.scenarios.overall <- Pr.freq.FUN.SCENARIOS(X.mat=X.mat, freq.PREV.q = freq.PREV.q, freq.LAC.obs.age=freq.LAC.obs.age, logit.SEIR.est=logit.SEIR.est,psi.mat=psi.mat, percent.to.remove=percent.to.remove, factor.to.remove=factor.to.remove)
 
-n.dates <- ncol(freq.LAC.obs.age)
-
-#percent.to.remove <- c(1,0.5) # Remove 100%
-#factor.to.remove <- 4  # Age.65.
-weighted.avg <- vector("list", n.dates)
-weighted.avg.scenarios <- vector("list",length(percent.to.remove))
-weighted.avg.scenarios.overall <- NULL
-
-for (remove in 1:length(percent.to.remove)){
-  for (t in 1:n.dates){
-    percent.remove <- percent.to.remove[remove]
-    time = t
-    name.date <- colnames(freq.LAC.obs.age)[t]
-
-    freq.I <- freq.ILL(X.mat, freq.PREV.q, freq.LAC.obs.age, time = time)
-
-    Pr.H.I.q <- get.Pr.q(model=1, time=time, logit.SEIR.est, X.mat, freq.q.IN = freq.I[[2]],  psi.mat)
-    freq.H <- get.population.freq(prob.q.vec.IN = Pr.H.I.q, freq.q.IN = freq.I[[1]], X.mat)
-
-    Pr.Q.H.q <- get.Pr.q(model=2, time=time, logit.SEIR.est, X.mat, freq.q.IN = freq.H[[2]],  psi.mat)
-    freq.Q <- get.population.freq(prob.q.vec.IN = Pr.Q.H.q, freq.q.IN = freq.H[[1]], X.mat)
-
-    Pr.D.Q.q <- get.Pr.q(model=3, time=time, logit.SEIR.est, X.mat, freq.q.IN = freq.Q[[2]],  psi.mat)
-    freq.D <- get.population.freq(prob.q.vec.IN = Pr.D.Q.q, freq.q.IN = freq.Q[[1]], X.mat)
-
-    ##
-    freq.I.filter <- freq.I[[1]]*(1-percent.remove*X.mat[,factor.to.remove])
-    weighted.avg.H.filter <- t(Pr.H.I.q) %*% freq.I.filter
-
-    freq.H.filter <- (get.population.freq(Pr.H.I.q, freq.I.filter, X.mat))[[1]]
-    weighted.avg.Q.filter <- t(Pr.Q.H.q) %*% freq.H.filter
-
-    freq.Q.filter <- (get.population.freq(Pr.Q.H.q, freq.H.filter, X.mat))[[1]]
-    weighted.avg.D.filter <- t(Pr.D.Q.q) %*% freq.Q.filter
-
-    weighted.avg.t <- cbind( weighted.avg.H.filter, weighted.avg.Q.filter, weighted.avg.D.filter )
-    colnames(weighted.avg.t) <- c("Alpha.","Kappa.","Delta.")
-    colnames(weighted.avg.t) <- paste0( colnames(weighted.avg.t), name.date)
-    weighted.avg[[t]] <- weighted.avg.t
-    ##
+Pr.freq.FUN.SCENARIOS <- function(X.mat, freq.PREV.q, freq.LAC.obs.age, logit.SEIR.est, psi.mat, percent.to.remove, factor.to.remove){
+  
+  n.dates <- ncol(freq.LAC.obs.age)
+  
+  #percent.to.remove <- c(1,0.5) # Remove 100%
+  #factor.to.remove <- 4  # Age.65.
+  weighted.avg <- vector("list", n.dates)
+  weighted.avg.scenarios <- vector("list",length(percent.to.remove))
+  weighted.avg.scenarios.overall <- NULL
+  
+  for (remove in 1:length(percent.to.remove)){
+    for (t in 1:n.dates){
+      percent.remove <- percent.to.remove[remove]
+      time = t
+      name.date <- colnames(freq.LAC.obs.age)[t]
+      
+      freq.I <- freq.ILL(X.mat, freq.PREV.q, freq.LAC.obs.age, time = time)
+      
+      Pr.H.I.q <- get.Pr.q(model=1, time=time, logit.SEIR.est, X.mat, freq.q.IN = freq.I[[2]],  psi.mat)
+      freq.H <- get.population.freq(prob.q.vec.IN = Pr.H.I.q, freq.q.IN = freq.I[[1]], X.mat)
+      
+      Pr.Q.H.q <- get.Pr.q(model=2, time=time, logit.SEIR.est, X.mat, freq.q.IN = freq.H[[2]],  psi.mat)
+      freq.Q <- get.population.freq(prob.q.vec.IN = Pr.Q.H.q, freq.q.IN = freq.H[[1]], X.mat)
+      
+      Pr.D.Q.q <- get.Pr.q(model=3, time=time, logit.SEIR.est, X.mat, freq.q.IN = freq.Q[[2]],  psi.mat)
+      freq.D <- get.population.freq(prob.q.vec.IN = Pr.D.Q.q, freq.q.IN = freq.Q[[1]], X.mat)
+      
+      ##
+      freq.I.filter <- freq.I[[1]]*(1-percent.remove*X.mat[,factor.to.remove])
+      weighted.avg.H.filter <- t(Pr.H.I.q) %*% freq.I.filter
+      
+      freq.H.filter <- (get.population.freq(Pr.H.I.q, freq.I.filter, X.mat))[[1]]
+      weighted.avg.Q.filter <- t(Pr.Q.H.q) %*% freq.H.filter
+      
+      freq.Q.filter <- (get.population.freq(Pr.Q.H.q, freq.H.filter, X.mat))[[1]]
+      weighted.avg.D.filter <- t(Pr.D.Q.q) %*% freq.Q.filter
+      
+      weighted.avg.t <- cbind( weighted.avg.H.filter, weighted.avg.Q.filter, weighted.avg.D.filter )
+      colnames(weighted.avg.t) <- c("Alpha.","Kappa.","Delta.")
+      colnames(weighted.avg.t) <- paste0( colnames(weighted.avg.t), name.date)
+      weighted.avg[[t]] <- weighted.avg.t
+      ##
+    }
+    weighted.avg.scenarios[[remove]] <- do.call(cbind, weighted.avg)
   }
-  weighted.avg.scenarios[[remove]] <- do.call(cbind, weighted.avg)
+  weighted.avg.scenarios.overall <- do.call(rbind,weighted.avg.scenarios)
+  rownames(weighted.avg.scenarios.overall) <- paste0("removed.",percent.to.remove)
+  
+  return(weighted.avg.scenarios.overall)
+  
 }
-weighted.avg.scenarios.overall <- do.call(rbind,weighted.avg.scenarios)
-rownames(weighted.avg.scenarios.overall) <- paste0("removed.",percent.to.remove)
-
-
 
