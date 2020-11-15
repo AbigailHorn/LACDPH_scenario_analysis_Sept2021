@@ -1,6 +1,6 @@
 ---
-title: "USC Predict COVID Project"
-subtitle: "Predictive Epidemic Model for COVID-19 in Los Angeles County"
+title: ""
+subtitle: "Risk-stratified COVID-19 policy analysis for Los Angeles County through an integrated risk and stochastic epidemiological model"
 author: "University of Southern California, Department of Preventive Medicine"
 output:
   html_document:
@@ -12,12 +12,6 @@ editor_options:
   chunk_output_type: console
 ---
 
-<!--
-NOTES:
-- All data is read-in in the index.Rmd file
-- All code is sourced in the index.Rmd file?
-
--->
 
 <!--Initialize-->
 
@@ -98,7 +92,7 @@ code.scenarios.dir=here("code/scenarios_code/")
 <!--Set global options-->
 
 ```{r options, include=FALSE}
-print.output <- TRUE
+print.output <- FALSE
 days.truncate <- 15
 endDatePlot <- as.Date("2020-12-01")
 ```
