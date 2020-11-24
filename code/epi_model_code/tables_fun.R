@@ -43,7 +43,7 @@ summary.table.param.CFR.IFR <- function(traj.CI, ABC_out, date.in, use.mean.sele
 
   # PROBABILITY OF SEVERE ILLNESS TABLE
   probs.table <- as.data.frame(matrix(data=NA, nrow=2, ncol=3))
-  rownames(probs.table) <- c("2020-05-01", "2020-06-01")
+  rownames(probs.table) <- c("2020-05-01", "2020-08-01")
   colnames(probs.table) <- c("Alpha_t", "Kappa_t", "Delta_t")
   probs.table[1,1] <- posterior.CI.FORMAT(Alpha1.CI,use.mean=use.mean.select)
   probs.table[2,1] <- posterior.CI.FORMAT(Alpha2.CI,use.mean=use.mean.select)
