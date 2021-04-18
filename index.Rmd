@@ -779,15 +779,15 @@ pop.prev.2021 <- read.csv(path(data.dir, "risk_model_2021/Pop.prevalence.2021.cs
 
 ```
 
-## $$\psi$$ matrix - log conditional risks {.tabset}
+## $\psi$ matrix - log conditional risks {.tabset}
 
-### $$\psi$$ matrix original
+### $\psi$ matrix original
 
 ```{r}
 formattable(psi.mat.orig)
 ```
 
-### $$\psi$$ matrix edited
+### $\psi$ matrix edited
 
 ```{r}
 formattable(psi.mat)

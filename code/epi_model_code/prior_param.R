@@ -3,7 +3,7 @@
 prior.st <- c("unif",44,46)
 
 R0 <- 3.65
-prior.R0 <- c("normal",R0,.01)
+prior.R0 <- c("normal",R0,.03)
 
 R0_redux1 <- .21
 R0_redux2 <- .33
@@ -29,7 +29,7 @@ Alpha2 <- .15 #.09
 Kappa2 <- .2 #.185
 Delta2 <- .55 #.575 #.8 
 
-stdev <- 0.001
+stdev <- 0.003
 prior.Delta1 <- c("normal",Delta1, stdev)#.001) #0.01)
 prior.Alpha1 <- c("normal",Alpha1, stdev)#.002) #0.003)
 prior.Kappa1 <- c("normal",Kappa1, stdev)#.002) # 0.03)
