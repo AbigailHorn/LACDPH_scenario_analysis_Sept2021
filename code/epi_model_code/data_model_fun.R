@@ -7,7 +7,7 @@
 ## Read and process the data
 
 latest_covid_data <- function(truncate=0){
-  cum_file <- sort(dir_ls(data.dir, regexp = "cum_counts_"), decreasing = TRUE)[1]
+  cum_file <- sort(dir_ls(data.dir, regexp = "cum_counts21_"), decreasing = TRUE)[1]
   latest_data = t(read.csv(cum_file, sep=",",stringsAsFactors = FALSE))
   colnames<-c("Htotcum","D","Vcum","Idetectcum","H_new","D_new","I_detect_new","V_new")
   nvars <- ncol(latest_data)
@@ -18,7 +18,7 @@ latest_covid_data <- function(truncate=0){
   latest_data[1:nvars] <- sapply(latest_data[1:nvars],as.numeric)
   latest_data <- latest_data %>% dplyr::select(-V_new)
   no_obs <- nrow(latest_data)
-  
+
   latest_data <- latest_data[c(1:(no_obs-truncate)),]
 
   ## Change date to number
@@ -143,6 +143,7 @@ correlated.param.SIM <- function(ABC.out.mat,iter,time.steps) {
     Alpha2 <- ABC.out.mat[idx,11]
     Kappa2 <- ABC.out.mat[idx,12]
     r2 <- ABC.out.mat[idx,13]
+    R0_redux3 <- ABC.out.mat[idx,14]
 
     ### BRING IN BETA_T ALPHA_T KAPPA_T DELTA_T FUNCTIONS
     fn_t_readin_code <- path(code.paper.dir, "fn_t_readin_code_FULL.R")
@@ -240,33 +241,41 @@ model.output.to.plot.SIM <- function(ABC.out.mat, par.vec.length, iter, time.ste
 ## The cumulative number of cases at all (trusted) time points
 ###################################################################################################
 
-sum.stats.SIMTEST <- function(data,include.R=TRUE){
+sum.stats.SIMTEST <- function(data){
 
-  no_obs <- nrow(data)
+  #print(no_obs)
+  #no_obs <- nrow(data)
+  #last_date <- as.numeric(as.Date(last_date_data) - as.Date("2020-03-01"))
 
   # Which values of variables to consider
   I.trust.n <- c(10:no_obs)  # The first 9 days of illness cases are unreliable/unavailable
-  H.trust.n <- c(17:no_obs)  # The first 16 days of hospitalizations are unreliable/unavailable
-  V.trust.n <- c(19:no_obs)  # The first 18 days of ventilation are unreliable/unavailable
+  #H.trust.n <- c(17:last_date)  # The first 16 days of hospitalizations are unreliable/unavailable
+  #V.trust.n <- c(19:last_date)  # The first 18 days of ventilation are unreliable/unavailable
   D.trust.n <- c(18:no_obs)  # The first 17 days of mortality are unreliable/unavailable
-  Hnew.trust.n <- c(19:no_obs) # The first 18 days of new hospitalizations are unreliable/unavailable
+  #Hnew.trust.n <- c(19:last_date) # The first 18 days of new hospitalizations are unreliable/unavailable
   Dnew.trust.n <- c(28:no_obs) # The first 28 days of new deaths are unreliable/unavailable
-  R.trust.n <- c(0:35)
-
-  ss.I <- data$Idetectcum[I.trust.n]
-  ss.H <- data$Htotcum[H.trust.n]
-  ss.V <- data$Vcum[V.trust.n]
+  HQ.trust.n <- c(29:no_obs)
+  
+  ss.Icum <- data$Idetectcum[I.trust.n]
+  ss.I <- data$I_detect_new[I.trust.n]
+  #ss.H <- data$Htotcum[H.trust.n]
+  #ss.V <- data$Vcum[V.trust.n]
   ss.D <- data$D[D.trust.n]
-  ss.Hnew <- data$H_new[Hnew.trust.n]
+  #ss.Hnew <- data$H_new[Hnew.trust.n]
   ss.Dnew <- data$D_new[Dnew.trust.n]
-  ss.R <- data$R[R.trust.n]
-
+  ss.Htot <- data$Htot[HQ.trust.n]
+  ss.Q <- data$Q[HQ.trust.n]
+  
+  # print(length(ss.Icum))
+  # print(length(ss.I))
+  # print(length(ss.D))
+  # print(length(ss.Dnew))
+  # print(length(ss.Htot))
+  # print(length(ss.Q))
+  
   # Which variables to consider
 
-  if (include.R == TRUE){summarystats = c(ss.I, ss.H, ss.V, ss.D, ss.Hnew, ss.Dnew, ss.R) }
-  else if (include.R == FALSE)
-  {summarystats = c(ss.I, ss.H, ss.V, ss.D, ss.Hnew, ss.Dnew) }
-
+  summarystats = c(ss.I, ss.Icum, ss.Htot, ss.Q, ss.Dnew, ss.D)
 
   return(summarystats)
 }
@@ -276,7 +285,7 @@ sum.stats.SIMTEST <- function(data,include.R=TRUE){
 ## SIMULATION MODEL FUNCTION TO COMPUTE FOR ABC ALGORITHM
 ## A function implementing the model to be simulated
 ## It must take as arguments a vector of model parameter values par
-## and it must return a vector of summary statistics
+## and it must return a vector of summary statistics (compartmental model variables from simulation)
 ###################################################################################################
 
 model.1sim.stats.no.R <- function(par){
@@ -294,6 +303,7 @@ model.1sim.stats.no.R <- function(par){
   Alpha2 <- par[11]
   Kappa2 <- par[12]
   r2 <- par[13]
+  R0_redux3 <- par[14]
 
   ### BRING IN BETA_T ALPHA_T KAPPA_T DELTA_T FUNCTIONS
   fn_t_readin_code <- path(code.paper.dir, "fn_t_readin_code_FULL.R")
@@ -303,14 +313,25 @@ model.1sim.stats.no.R <- function(par){
   # Beta_y[length.B] <- Beta_y[length.B]*0.9
   # Beta_y[length.B] <- Beta_y[length.B-1]*0.9
 
+  # print(paste0("Dimensions of Beta_y",(Beta_y)))
+  # print(paste0("Dimensions of Beta_t",(Beta_t)))
+  # print(paste0("Dimensions of r_y",(r_y)))
+  # print(paste0("no_obs",(no_obs)))
+
   ### GENERATE SIMULATION
   x <- seihqdr_generator(Alpha_t=Alpha_t, Alpha_y=Alpha_y, Kappa_t=Kappa_t, Kappa_y=Kappa_y, Delta_t=Delta_t, Delta_y=Delta_y, Beta_t=Beta_t, Beta_y=Beta_y, r_t=r_t, r_y=r_y, S_ini=1e7, E_ini=10, p_QV=p_V)
   st <- start_time
   one_sim <- as.data.frame(x$run(0:(st+no_obs))[(st+1):(st+no_obs),])
 
+  # print(head(one_sim))
+  # print(tail(one_sim))
+  #print(no_obs)
+  
   ### SUMMARY STATISTICS COMPUTED ON MODEL OUTPUT:
-  summarymodel <- sum.stats.SIMTEST(one_sim,include.R=FALSE)
+  summarymodel <- sum.stats.SIMTEST(one_sim)
 
+  #print(length(summarymodel))
+  
   return(summarymodel)
 }
 

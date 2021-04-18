@@ -1,0 +1,72 @@
+---
+title: "Census Data"
+author: "Brooke Bell"
+date: "12/10/2020"
+output:
+  html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+## Setup
+
+```{r setup, include=FALSE}
+
+rm(list = ls())
+
+options(tigris_use_cache = TRUE)
+
+library(tidycensus)
+library(tidyr)
+library(tidyverse)
+library(gtsummary)
+library(plotly)
+library(kableExtra)
+library(mapview)
+library(leafsync)
+library(stringr)
+library(formattable)
+library(patchwork)
+library(here)
+library(fs)
+
+data.dir=here("data/")
+
+# # add api
+# census_api_key("9c4a9e05068b07cbc86159d4ffed6786cdb115a7", install = TRUE)
+
+# Your API key has been stored in your .Renviron and can be accessed by Sys.getenv("CENSUS_API_KEY"). 
+# To use now, restart R or run `readRenviron("~/.Renviron")`
+# [1] "9c4a9e05068b07cbc86159d4ffed6786cdb115a7"
+
+# look at vars in ACS
+v19 <- load_variables(2019, "acs5", cache = TRUE)
+
+#View(v17)
+ages = get_acs(state="CA", county = "Los Angeles", geography = "county", variables = c(age_0.18 = "C18108_002",
+                                                                                          age19.34 = "B27010_018",
+                                                                                       age35.44 = "B06001_006",
+                                                                                       age45.49 = "B07001_010",
+                                                                                       age50.54 = "B07001_011",
+                                                                                       age55.59 = "B06001_008",
+                                                                                       age60.64 = "B08101_007",
+                                                                                       age65.74 = "B06001_011",
+                                                                                       age75.79.male = "B01001_023",
+                                                                                       age75.79.female = "B01001_047"
+                                                                                       ), geometry = FALSE, summary_var="B01003_001")
+
+#view(ages)
+ages$summary_est[1] - sum(ages$estimate)
+ages <- ages %>% select(variable, estimate, summary_est) %>% as.data.frame()
+age_0.18 <- ages["age_0.18","estimate"]
+age80. <- ages$summary_est[1] - sum(ages$estimate)
+age_19.49 <- ages["age19.34","estimate"] + ages["age35.44","estimate"] + ages["age45.49","estimate"]
+age_50.64 <- ages["age50.54", "estimate"] + ages["age55.59","estimate"] + ages["age60.64","estimate"]
+age_65.79 <- ages["age65.74","estimate"] + ages["age75.79.male","estimate"] + ages["age75.79.female","estimate"]
+ages <- ages %>% mutate(age_frac = (estimate / summary_est))
+#write.csv(ages, file = "/Users/abigailhorn/Dropbox/GitHub/COVID-Risks-LA/data/risk_update/ages.csv")
+
+
+``` 
+
+

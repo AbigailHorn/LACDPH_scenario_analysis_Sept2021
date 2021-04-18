@@ -146,7 +146,7 @@ E_ini <- user(10) # infected
 
 ### Parameters - fixed
 d_EI <- user(5.2)  #days between exposure and infectivity (incubation period)
-d_IH <- user(10)   #days between illness onset and hospitalization
+d_IH <- user(8)   #days between illness onset and hospitalization
 d_IR <- user(7)    #days between illness onset and recovery (hospitalization not required)
 d_HQ <- user(1)    #days between hospitalization start and ICU
 d_HR <- user(12)   #days in hospital (ICU not required)

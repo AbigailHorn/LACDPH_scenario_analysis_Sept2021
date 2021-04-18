@@ -17,10 +17,10 @@ mu_y_chr <- fn_t_readin$Beta_y
 assign("mu.0",1)
 assign("mu.1", R0_redux1)
 assign("mu.2", R0_redux2)
-assign("mu.3", 1.2*R0_redux2) #0.31)
-#assign("mu.3",4*(mu.2 - mu.1))
+assign("mu.3", R0_redux3) #0.31)
+assign("mu.4", 1.25*R0_redux3)
 #assign("mu.4",(mu.3+mu.2)/2)
-#assign("mu.5",mu.2)
+assign("mu.5", 0.65*R0_redux3)
 
 mu_y <- as.vector(length(Beta_t))
 for (i in 1:length(Beta_t)){
@@ -52,8 +52,21 @@ Beta_y<- c(
   Br.function(R0.in<-R0_y[10], r.in<-r2, Alpha.in<-Alpha2),
   Br.function(R0.in<-R0_y[11], r.in<-r2, Alpha.in<-Alpha2),
   Br.function(R0.in<-R0_y[12], r.in<-r2, Alpha.in<-Alpha2),
-  Br.function(R0.in<-R0_y[13], r.in<-r2, Alpha.in<-Alpha2)
+  Br.function(R0.in<-R0_y[13], r.in<-r2, Alpha.in<-Alpha2),
+  Br.function(R0.in<-R0_y[14], r.in<-r2, Alpha.in<-Alpha2),
+  Br.function(R0.in<-R0_y[15], r.in<-r2, Alpha.in<-Alpha2),
+  Br.function(R0.in<-R0_y[16], r.in<-r2, Alpha.in<-Alpha2),
+  Br.function(R0.in<-R0_y[17], r.in<-r2, Alpha.in<-Alpha2),
+  Br.function(R0.in<-R0_y[18], r.in<-r2, Alpha.in<-Alpha2),
+  Br.function(R0.in<-R0_y[19], r.in<-r2, Alpha.in<-Alpha2),
+  Br.function(R0.in<-R0_y[20], r.in<-r2, Alpha.in<-Alpha2),
+  Br.function(R0.in<-R0_y[21], r.in<-r2, Alpha.in<-Alpha2),
+  Br.function(R0.in<-R0_y[22], r.in<-r2, Alpha.in<-Alpha2),
+  Br.function(R0.in<-R0_y[23], r.in<-r2, Alpha.in<-Alpha2),
+  Br.function(R0.in<-R0_y[24], r.in<-r2, Alpha.in<-Alpha2)
 )
+
+#print(paste0("Dimensions of Beta_y",dim(Beta_y)))
 
 ##########################################################################################
 ## Evaluate r_t from readin
@@ -85,6 +98,9 @@ Alpha_t <- round(as.numeric(Alpha_t_dates - as.Date("2020-03-01")) + start_time)
 Alpha_y_chr <- alpha_t_readin$Alpha_y
 assign("Alpha1",Alpha1)
 assign("Alpha2", Alpha2)
+assign("Alpha3", Alpha2*1.2)
+assign("Alpha4", Alpha2*.75) #.7)
+
 
 Alpha_y <- as.vector(length(Alpha_t))
 for (i in 1:length(Alpha_t)){
@@ -99,6 +115,8 @@ Kappa_t <- Alpha_t
 Kappa_y_chr <- alpha_t_readin$Kappa_y
 assign("Kappa1",Kappa1)
 assign("Kappa2", Kappa2)
+assign("Kappa3", Kappa2*1.25)
+assign("Kappa4", Kappa2*.8) #75)
 
 Kappa_y <- as.vector(length(Alpha_t))
 for (i in 1:length(Alpha_t)){
@@ -113,6 +131,8 @@ Delta_t <- Alpha_t
 Delta_y_chr <- alpha_t_readin$Delta_y
 assign("Delta1",Delta1)
 assign("Delta2", Delta2)
+assign("Delta3", Delta2*1.1)
+assign("Delta4", Delta2*1.25)#1.5)
 
 Delta_y <- as.vector(length(Alpha_t))
 for (i in 1:length(Alpha_t)){

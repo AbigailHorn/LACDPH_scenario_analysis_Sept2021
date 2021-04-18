@@ -1,0 +1,674 @@
+---
+title: "COVID19 Modeling for Los Angeles County"
+subtitle: Analysis updated with data as of `r Sys.Date()`
+author: "University of Southern California, Department of Preventive Medicine"
+output:
+  html_document:
+    css: styles.css
+    toc: yes
+    toc_depth: 2
+    toc_float: yes
+editor_options:
+  chunk_output_type: console
+---
+
+<br>
+
+**Note**: This version of the model does not include vaccinations. As of 2/25/2021 the [percentages of the Los Angeles County population that have received vaccines](http://publichealth.lacounty.gov/media/coronavirus/vaccine/vaccine-dashboard.htm) are:
+
+- **6%** 1st and 2nd doses
+- **13.6%** 1st dose only
+
+<br>
+<br>
+
+<!--Initialize-->
+
+``` {r setup, include=FALSE}
+
+### Install necessary packages and get started
+
+library(reshape2)
+library(tidyverse)
+library(ggplot2)
+library(plotly)
+library(ggrepel)
+library(bindata)
+library(odin)
+library(fitR)
+library(knitr)
+library(EasyABC)
+library(gridExtra)
+library(odin)
+library(lubridate)
+library(EasyABC)
+library(gridExtra)
+library(kableExtra)
+library(plyr)
+library(dplyr)
+library(data.table)
+library(scales)
+library(EasyABC)
+library(patchwork)
+
+library(tidyr)
+library(readr)
+library(purrr)
+library(tibble)
+library(stringr)
+library(forcats)
+library(network)
+library(tidygraph)
+library(ggraph)
+library(visNetwork)
+library(networkD3)
+library(ggmosaic)
+library(formattable)
+library(DT)
+library(reshape)
+library(here)
+library(fs)
+
+library(MASS)
+library(plotly)
+
+lang_output <- function(x, lang) {
+  cat(c(sprintf("```%s", lang), x, "```"), sep = "\n")
+}
+r_output <- function(x) lang_output(x, "r")
+
+knitr::opts_chunk$set(
+  fig.width = 9.5,
+  fig.height = 8,
+  eval=TRUE,
+  echo=FALSE,
+  warning=FALSE,
+  cache=FALSE,
+  message=FALSE,
+  include=TRUE
+  )
+
+code.dir=here("code/")
+data.dir=here("data/")
+result.dir = here("results/")
+fig.dir = here("figs/")
+output.dir = here("output/")
+code.paper.dir=here("code/epi_model_code")
+code.risk.dir=here("code/risk_model_code/")
+code.scenarios.dir=here("code/scenarios_code/")
+```
+
+<!--Set global options-->
+
+```{r options, include=FALSE}
+print.output <- FALSE
+days.truncate <- 0
+endDatePlotGlobal <- as.Date("2021-03-01")
+no_obs <- as.numeric(endDatePlotGlobal - as.Date("2020-03-01")) + 1
+```
+
+
+<!--Read in epidemic model, functions, COVID data-->
+
+```{r read-in-model-supporting-functions, include=FALSE}
+
+###################################################################################################
+## LOAD EPIDEMIC MODEL
+## And compile the model
+path_seihqdr_model <- path(code.paper.dir, "stochastic_SEIAHQDR_Alphat_rt.R")
+seihqdr_generator <- odin::odin(path_seihqdr_model)
+
+###################################################################################################
+## LOAD DATA PROCESSING AND MODEL ESTIMATING FUNCTIONS
+model_functions <- path(code.paper.dir, "data_model_fun.R")
+source(model_functions)
+
+###################################################################################################
+## LOAD PLOTTING FUNCTIONS
+plot_code <- path(code.paper.dir, "plotting_fun_NEW.R")
+source(plot_code)
+
+###################################################################################################
+## LOAD TABLES FUNCTIONS
+tables_code <- path(code.paper.dir, "tables_fun.R")
+source(tables_code)
+
+###################################################################################################
+## COVID INPUT DATA
+## latest_data: cumulative and daily counts for "Htotcum","D","Vcum","Idetectcum","H_new","D_new"
+## no_obs: number of observation days
+
+# latest_data <- latest_covid_data(truncate=days.truncate)
+# no_obs <- nrow(latest_data)
+
+# latimes_path <- path(code.paper.dir, "LAtimes.R")
+# source(latimes_path)
+# la_data <- latimes_readin()
+
+```
+
+
+<!--Model Fitting-->
+
+```{r model-fitting-code, include=FALSE}
+
+## SOURCE PRIOR PARAMETERS
+## Provides output in form of a prior.par list
+## Note: Beta(t), Alpha(t), Kappa(t), Delta(t) are read in from file
+prior_param_input <- path(code.paper.dir, "prior_param.R")
+source(prior_param_input)
+# prior.par
+
+## SUMMARY STATISTICS COMPUTED ON DATA
+#summarydata <- sum.stats.SIMTEST(latest_data,last_date_data = "2021-01-18") # function sum.stats.SIMTEST from supporting_functions
+summarydata <- sum.stats.SIMTEST(la_data[c(1:no_obs),])
+model.R <- model.1sim.stats.no.R  # From supporting_functions
+
+### NUMBER OF OUTPUTS
+n_calibration = 10000
+n_rec = 1000
+# n_calibration = 10000
+# n_rec = 2000
+
+## FIT MODEL
+ABC_out<-ABC_mcmc(method="Marjoram",model=model.R,prior=prior.par,
+                       summary_stat_target=summarydata, n_calibration=n_calibration,
+                       tolerance_quantile=0.1,verbose=FALSE,progress=TRUE, n_rec=n_rec)
+
+ABC.par.out <- as.data.frame(ABC_out$param)
+ABC.out.mat <- ABC_out$param
+par.vec.length <- nrow(ABC_out$param)
+
+```
+
+
+<!--Simulate model-->
+<!--Get compartment variables over time with CI-->
+<!--Get CFR/IFR-->
+
+```{r include=FALSE}
+###################################################################################################
+## GET MODEL OUTPUT: traj.0
+
+ABC.out.mat <- ABC_out$param
+par.vec.length <- nrow(ABC_out$param)
+iter <- 10
+time.steps <- 500
+vars.to.plot <- vars.plus.R
+
+## FUNCTION MODEL.OUTPUT.TO.PLOT.SIM
+## Calculates mean and CI of each estimated parameter & CFR/IFR
+## Uses correlated.param.SIM
+## Reads in Beta, Alpha, Kappa, Delta from file
+traj.0 <- model.output.to.plot.SIM(ABC.out.mat=ABC.out.mat, par.vec.length=par.vec.length, iter=iter, time.steps=time.steps, vars.to.plot = vars.to.plot)
+
+```
+
+
+```{r include=FALSE}
+
+###################################################################################################
+## Plot all variables current date
+
+time.steps.4.plot = endDatePlotGlobal - as.Date("2020-03-01")
+data.in <- la_data
+vars.to.plot <- vars.plus.R
+
+plot.all.variables.curr.date <- 
+plot.model.data.all(traj.CI = traj.0, data.in = data.in, init.date.data = "2020-03-01", date.offset.4plot = 0, time.steps.4plot=time.steps.4.plot,
+                    vars.to.plot=vars.plus.R)
+
+if (print.output==TRUE){
+  pdf(file = path(output.dir, "plot.all.variables.pdf"), width=10, height =10)
+  plot.all.variables.curr.date
+  dev.off()
+}
+plot.all.variables.curr.date
+
+```
+
+
+
+
+```{r}
+###################################################################################################
+## PLOTTING DENSITIES
+
+out_R0 <- as.data.frame(cbind(ABC_out$param[,1],ABC_out$weights))
+out_r<- as.data.frame(cbind(ABC_out$param[,2],ABC_out$weights))
+out_R0redux1<- as.data.frame(cbind(ABC_out$param[,4],ABC_out$weights))
+out_R0redux2<- as.data.frame(cbind(ABC_out$param[,9],ABC_out$weights))
+out_alpha1 <- as.data.frame(cbind(ABC_out$param[,6]))
+out_alpha2 <- as.data.frame(cbind(ABC_out$param[,11]))
+
+yesR.p.R0redux <- ggplot2::ggplot(out_R0redux1, aes(V1)) + geom_density() + xlab("R0 Redux Posterior Distribution") + ggtitle("R0 Redux")
+yesR.p.R0 <- ggplot(out_R0, aes(V1)) + geom_density() + xlab("R0 Posterior Distribution") + ggtitle("R0")
+yesR.p.r <- ggplot(out_r, aes(V1)) + geom_density() + xlab("r Posterior Distribution") + ggtitle("r")
+yesR.p.alpha1 <- ggplot(out_alpha1, aes(V1)) + geom_density() + xlab("Posterior Distribution") + ggtitle("alpha1")
+yesR.p.alpha2 <- ggplot(out_alpha2, aes(V1)) + geom_density() + xlab("Posterior Distribution") + ggtitle("alpha2")
+yesR.p.alpha1
+yesR.p.alpha2
+
+#yesR.p.R0redux + yesR.p.R0 + yesR.p.r
+
+den3d <- kde2d(ABC.out.mat[,1], ABC.out.mat[,2])
+yesR.p.3d.R0.r <- plot_ly(x=den3d$x, y=den3d$y, z=den3d$z) %>% add_surface()
+layout(yesR.p.3d.R0.r, title="R0 and r (fraction observed cases) joint posterior density")
+
+den3d <- kde2d(ABC.out.mat[,1], ABC.out.mat[,4])
+yesR.p.3d.R0.redux <- plot_ly(x=den3d$x, y=den3d$y, z=den3d$z) %>% add_surface()
+layout(yesR.p.3d.R0.redux, title="R0 and R0_redux (R0 factor reduction) joint posterior density")
+
+den3d <- kde2d(ABC.out.mat[,2], ABC.out.mat[,4])
+yesR.p.3d.r.redux <- plot_ly(x=den3d$x, y=den3d$y, z=den3d$z) %>% add_surface()
+layout(yesR.p.3d.r.redux, title="r (fraction observed cases) and R0_redux (R0 factor reduction) joint posterior density")
+
+
+###################################################################################################
+
+```
+
+
+
+
+```{r include=FALSE}
+time.steps.4plot = endDatePlotGlobal - as.Date("2020-03-01")
+data.in <- latest_data
+plot.annotations <- TRUE
+plot.capacity <- TRUE
+ymax=NULL
+
+## OBSERVED ONLY
+var.to.plot <- "I"
+plot.percent.OBS <- plot.percent.LAC(traj.CI=traj.0, data.in=data.in, init.date.data=as.Date("2020-03-01"), time.steps.4plot=time.steps.4plot, ymax=NULL, plot.capacity=NULL, plot.annotations=TRUE, var.to.plot=var.to.plot)
+
+date.selected <- Sys.Date()
+var.to.plot <- "I"
+percent.current.OBS <- get.current.percent(traj.CI=traj.0, date.selected=date.selected,var.to.plot = var.to.plot)
+
+date.selected <- Sys.Date()+10
+var.to.plot <- "I"
+percent.in10days.OBS <- get.current.percent(traj.CI=traj.0, date.selected=date.selected,var.to.plot = var.to.plot)
+
+
+## OBSERVED AND UNOBSERVED 
+var.to.plot <- "Itot"
+plot.percent.TOT <- plot.percent.LAC(traj.CI=traj.0, data.in=data.in, init.date.data=as.Date("2020-03-01"), time.steps.4plot=time.steps.4plot, ymax=NULL, plot.capacity=NULL, plot.annotations=TRUE, var.to.plot=var.to.plot)
+
+date.selected <- Sys.Date()
+var.to.plot <- "Itot"
+percent.current.TOT <- get.current.percent(traj.CI=traj.0, date.selected=date.selected,var.to.plot = var.to.plot)
+
+date.selected <- Sys.Date()+10
+var.to.plot <- "Itot"
+percent.in10days.TOT <- get.current.percent(traj.CI=traj.0, date.selected=date.selected,var.to.plot = var.to.plot)
+
+
+```
+
+
+
+<!--Estimated epidemic parameters
+-->
+
+```{r include=FALSE}
+
+endDatePlot <- endDatePlotGlobal
+Fig3.plots <- plot.param.t(ABC_out = ABC_out, endDatePlot=endDatePlot)
+
+if (print.output==TRUE){
+  pdf(file = path(output.dir, "plot_Rt.pdf"), width=10, height =10)
+  Fig3.plots[[1]]
+  dev.off()
+  
+  pdf(file = path(output.dir, "plot_r_t.pdf"), width=10, height =10)
+  Fig3.plots[[2]]
+  dev.off()
+  
+  pdf(file = path(output.dir, "plot_AKD_t.pdf"), width=10, height =10)
+  Fig3.plots[[3]]
+  dev.off()
+}
+
+```
+
+
+<!---
+Single compartment plots
+--->
+
+```{r include=FALSE}
+
+time.steps.4.plot = endDatePlotGlobal - as.Date("2020-03-01") + 1
+data.in <- latest_data
+plot.annotations <- TRUE
+plot.capacity <- TRUE
+ymax=NULL
+
+## Get compartmental variable plots TOGETHER and print/save
+plot.out.H.I <- plot.out.compartmental(traj.CI = traj.CI, endDatePlot = endDatePlot)
+
+if (print.output==TRUE){
+  pdf(file = path(output.dir, "curr_infect_TOGETHER.pdf"), width=10, height =10)
+  plot.out.H.I[[2]]
+  dev.off()
+  
+  pdf(file = path(output.dir, "curr_healthcare_TOGETHER.pdf"), width=10, height =10)
+  plot.out.H.I[[1]]
+  dev.off()
+}
+
+## Get plots for individual variables (for ggplotly)
+
+var.to.plot <- "I_detect_new"
+#ymax=60000
+plot.I.new <- plot.model.single(traj.CI=traj.0, data.in=data.in, init.date.data="2020-03-01",time.steps.4plot=time.steps.4plot, 
+                                ymax=ymax, plot.capacity=plot.capacity, plot.annotations=plot.annotations, var.to.plot=var.to.plot)
+
+var.to.plot <- "I"
+#ymax=60000
+plot.I <- plot.model.single(traj.CI=traj.0, data.in=data.in, init.date.data="2020-03-01",time.steps.4plot=time.steps.4plot, 
+                                ymax=ymax, plot.capacity=plot.capacity, plot.annotations=plot.annotations, var.to.plot=var.to.plot)
+
+var.to.plot <- "Itot"
+#ymax=200000
+plot.Itot <- plot.model.single(traj.CI=traj.0, data.in=data.in, init.date.data="2020-03-01",time.steps.4plot=time.steps.4plot, 
+                                ymax=ymax, plot.capacity=plot.capacity, plot.annotations=plot.annotations, var.to.plot=var.to.plot)
+
+var.to.plot <- "Itotcum"
+#ymax=200000
+plot.Itotcum <- plot.model.single(traj.CI=traj.0, data.in=data.in, init.date.data="2020-03-01",time.steps.4plot=time.steps.4plot, 
+                                ymax=ymax, plot.capacity=plot.capacity, plot.annotations=plot.annotations, var.to.plot=var.to.plot)
+ggplotly(plot.Itotcum)
+
+var.to.plot <- "Htot"
+#ymax = 3000
+plot.Htot <- plot.model.single(traj.CI=traj.0, data.in=data.in, init.date.data="2020-03-01",time.steps.4plot=time.steps.4plot, 
+                                ymax=ymax, plot.capacity=plot.capacity, plot.annotations=plot.annotations, var.to.plot=var.to.plot)
+
+var.to.plot <- "Q"
+#ymax = 3000
+plot.Q <- plot.model.single(traj.CI=traj.0, data.in=data.in, init.date.data="2020-03-01",time.steps.4plot=time.steps.4plot, 
+                                ymax=ymax, plot.capacity=plot.capacity, plot.annotations=plot.annotations, var.to.plot=var.to.plot)
+
+
+var.to.plot <- "D_new"
+#ymax = 200
+plot.Dnew <- plot.model.single(traj.CI=traj.0, data.in=data.in, init.date.data="2020-03-01",time.steps.4plot=time.steps.4plot, 
+                                ymax=ymax, plot.capacity=plot.capacity, plot.annotations=plot.annotations, var.to.plot=var.to.plot)
+```
+
+## Numbers infected {.tabset}
+
+* **New = new daily incidence**
+* **Current = current census in compartment** 
+* **Cumulative = running total over time**
+* Black dots depict COVID-19 data
+
+### New observed infections (with data)
+
+```{r}
+ggplotly(plot.I.new)
+```
+
+
+### Current estimated total infections
+
+```{r width=3}
+ggplotly(plot.Itot)
+```
+
+### Current observed infections
+
+```{r}
+ggplotly(plot.I)
+```
+
+### Current observed and total infections (together)
+
+```{r}
+plot.out.H.I[[2]]
+```
+
+{-}
+
+## Numbers of Hospitalizations, ICU admissions, Deaths {.tabset}
+
+* **New = new daily incidence**
+* **Current = current census in compartment** 
+* **Cumulative = running total over time**
+* Black dots depict COVID-19 data
+* Dotted black line marks healthcare capacity limits
+
+### New deaths
+
+```{r}
+ggplotly(plot.Dnew)
+```
+
+### Current in hospital
+
+```{r}
+ggplotly(plot.Htot)
+```
+
+### Current in ICU
+
+```{r}
+ggplotly(plot.Q)
+```
+
+### Current hospitalizations, ventilations, and new deaths
+
+```{r}
+plot.out.H.I[[1]]
+```
+
+### Probabilities of severe illness
+
+- Probability of hospitalization given infection, $\alpha(t)$
+
+- Probability of ICU admission given hospitalization, $\kappa(t)$
+
+- Probability of death given ICU admission, $\delta(t)$
+
+```{r}
+Fig3.plots[[3]]
+```
+
+## Model fits {.tabset}
+
+Summarizes the epidemic model fit with COVID-19 data for LAC from March 1 through `r as.Date("2020-03-01") + no_obs` for all disease states across multiple views: New cases, representing new daily incidence; the current number in a compartment at a specific date, relevant for understanding current prevalence rates and comparing with healthcare capacity limitations; and cumulative counts until a specific date. Observed data for available compartments with cases attributable to nursing home residents removed, are plotted as black dots. The figure demonstrates that good model fits are achieved in all compartments across time.
+
+* **New = new daily incidence**
+* **Current = current census in compartment** 
+* **Cumulative = running total over time**
+* Black dots depict COVID-19 data, with counts from outbreaks in nursing homes removed
+* The dashed line represents healthcare resource capacity limits
+
+```{r include=FALSE}
+
+###################################################################################################
+## Plot all variables current date
+
+time.steps.4.plot = Sys.Date() - as.Date("2020-03-01") +1
+data.in <- latest_data
+vars.to.plot <- vars.plus.R
+
+plot.all.variables.curr.date <- 
+plot.model.data.all(traj.CI = traj.0, data.in = data.in, init.date.data = "2020-03-01", date.offset.4plot = 0, time.steps.4plot=time.steps.4.plot,
+                    vars.to.plot=vars.plus.R)
+
+if (print.output==TRUE){
+  pdf(file = path(output.dir, "plot.all.variables.pdf"), width=10, height =10)
+  plot.all.variables.curr.date
+  dev.off()
+}
+#plot.all.variables.curr.date
+
+```
+
+```{r include=FALSE}
+
+###################################################################################################
+## Plot all variables plus 15 days
+
+time.steps.4.plot = endDatePlotGlobal - as.Date("2020-03-01") + 15
+data.in <- latest_data
+vars.to.plot <- vars.plus.R
+
+plot.all.variables.plus.15.days <- 
+plot.model.data.all(traj.CI = traj.0, data.in = data.in, init.date.data = "2020-03-01", date.offset.4plot = 0, time.steps.4plot=time.steps.4.plot,
+                    vars.to.plot=vars.plus.R)
+
+if (print.output==TRUE){
+  pdf(file = path(output.dir, "plot.all.variables.pdf"), width=10, height =10)
+  plot.all.variables.plus.15.days
+  dev.off()
+}
+#plot.all.variables.plus.15.days
+```
+
+### Model fits through `r Sys.Date()`
+
+```{r}
+plot.all.variables.curr.date
+```
+
+### Model **projections** through `r date.selected`
+
+Projections **under the assumption of the infectious rate as of `r Sys.Date()`** 
+
+```{r}
+plot.all.variables.plus.15.days
+```
+
+{-}
+
+## Estimated epidemic parameters {.tabset}
+
+### Reproductive Number, $R(t)$
+
+This plot shows the time-varying Effective Reproductive Number R(t). This accounts for the fraction of the population that is assumed to be immune to reinfection through infection-acquired immunity. It does not account for the fraction of the population that has been vaccinated, although this is currently very small and would not make a sizeable impact.
+
+```{r}
+R_t_plot <- Fig3.plots[[1]]
+ggplotly(R_t_plot)
+```
+
+### Fraction of Observed Infections, $r(t)$
+
+```{r}
+Fig3.plots[[2]]
+```
+
+{-}
+
+
+## Tables: Parameter estimates {.tabset}
+
+```{r include=FALSE}
+###################################################################################################
+## GET MODEL OUTPUT: summary
+
+startDatePlot <- as.Date("2020-03-01")
+endDatePlot <- endDatePlotGlobal
+all_day_1s <- seq(startDatePlot,endDatePlot,by='month')
+all_day_15s <- all_day_1s+14
+date.in <- sort(c(all_day_1s,all_day_15s))
+tables.out <- summary.table.param.CFR.IFR(traj.CI=traj.0, ABC_out=ABC_out, date.in=date.in, use.mean.select = 1, round.by.in=4)
+
+```
+
+### $R0$, $r(t)$, $\mu(t)$
+```{r}
+formattable(tables.out[[1]])
+if (print.output==TRUE) write.csv(tables.out[[1]], file = path(output.dir, "R.r.mu_table.csv"))
+```
+
+### Probabilities of severe illness
+
+- Probability of hospitalization given infection, $\alpha(t)$
+
+- Probability of ICU admission given hospitalization, $\kappa(t)$
+
+- Probability of death given ICU admission, $\delta(t)$
+
+```{r}
+formattable(tables.out[[2]])
+akd_table <- tables.out[[2]]
+if (print.output==TRUE) write.csv(tables.out[[2]], file = path(output.dir, "AKD_t_table.csv"))
+```
+
+### CFR and IFR
+
+```{r}
+formattable(tables.out[[3]])
+if (print.output==TRUE) write.csv(tables.out[[3]], file = path(output.dir, "CFR_IFR_table.csv"))
+```
+
+
+## Figures: CFR and IFR
+
+```{r include=FALSE}
+
+startDatePlot <- as.Date("2020-03-01")
+endDatePlot <- endDatePlotGlobal #as.Date("2021-02-01")
+all_day_1s <- seq(startDatePlot,endDatePlot,by='month')
+all_day_15s <- all_day_1s+14
+date.in <- sort(c(all_day_1s,all_day_15s))
+
+CFR.IFR.plots.out <- CFR.IFR.plots(traj.CI=traj.0, date.in=date.in, endDatePlot = endDatePlot)
+
+if (print.output==TRUE){
+  pdf(file = path(output.dir, "CFR_plot.pdf"), width=10, height =10)
+  CFR.IFR.plots.out[[1]]
+  dev.off()
+  
+  pdf(file = path(output.dir, "IFR_plot.pdf"), width=10, height =10)
+  CFR.IFR.plots.out[[2]]
+  dev.off()
+}
+```
+
+### Time-varying CFR(t)
+
+```{r}
+CFR.IFR.plots.out[[1]]
+```
+
+### Time-varying IFR(t)
+```{r}
+CFR.IFR.plots.out[[2]]
+```
+
+
+## Percentage of LAC population currently infected 
+
+### % LAC population currently infected: observed + estimated unobserved infections
+
+* **The percentage infected on `r Sys.Date()` is estimated at `r percent.current.TOT`.**
+
+* **The percentage infected on `r date.selected`, *under the assumption of the infectious rate as of `r Sys.Date()`*, is estimated at `r percent.in10days.TOT`.**
+
+This plot shows the model-estimated total percentage (%) of the LAC population infected, accounting for **both observed and unobserved cases**.
+
+```{r}
+ggplotly(plot.percent.TOT)
+```
+
+### % LAC population currently infected: observed infections only
+
+* **The percentage infected on `r Sys.Date()` is estimated at `r percent.current.OBS`.**
+
+* **The percentage infected on `r date.selected`, *under the assumption of the infectious rate as of `r Sys.Date()`*, is estimated at `r percent.in10days.OBS`.**
+
+This plot shows the model-estimated total percentage (%) of the LAC population infected, accounting only for **confirmed observed cases**.
+
+```{r}
+ggplotly(plot.percent.OBS)
+```
+
+
+
+
