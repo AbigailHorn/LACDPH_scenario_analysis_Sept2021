@@ -57,31 +57,31 @@ latimes_age_readin <- function(){
            new_deaths = deaths_total - lag(deaths_total)) %>% # Difference in case between days 
     arrange(age)
   
-  age_0.18 = ages_readin %>% filter(age %in% c("0-4","5-17")) %>% group_by(date) %>% mutate(case_pct = sum(confirmed_cases_percent), death_pct = sum(deaths_percent)) %>% filter(age=="0-4")
+  age_0.18 = ages_readin %>% filter(age %in% c("0-4","5-17")) %>% group_by(date) %>% mutate(cases = sum(confirmed_cases_total), deaths=sum(deaths_total),  case_pct = sum(confirmed_cases_percent), death_pct = sum(deaths_percent)) %>% filter(age=="0-4")
   age_0.18$age.strata = "age_0.18"
   age_0.18$age = NULL
   age_0.18$confirmed_cases_percent = NULL
   age_0.18$deaths_percent = NULL
   
-  age_19.49 = ages_readin %>% filter(age %in% c("18-34","35-49")) %>% group_by(date) %>% mutate(case_pct = sum(confirmed_cases_percent), death_pct = sum(deaths_percent)) %>% filter(age=="18-34")
+  age_19.49 = ages_readin %>% filter(age %in% c("18-34","35-49")) %>% group_by(date) %>% mutate(cases = sum(confirmed_cases_total), deaths=sum(deaths_total),  case_pct = sum(confirmed_cases_percent), death_pct = sum(deaths_percent)) %>% filter(age=="18-34")
   age_19.49$age.strata = "age_19.49"
   age_19.49$age = NULL
   age_19.49$confirmed_cases_percent = NULL
   age_19.49$deaths_percent = NULL
   
-  age_50.64 = ages_readin %>% filter(age %in% c("50-59","60-64")) %>% group_by(date) %>% mutate(case_pct = sum(confirmed_cases_percent), death_pct = sum(deaths_percent)) %>% filter(age=="50-59")
+  age_50.64 = ages_readin %>% filter(age %in% c("50-59","60-64")) %>% group_by(date) %>% mutate(cases = sum(confirmed_cases_total), deaths=sum(deaths_total),  case_pct = sum(confirmed_cases_percent), death_pct = sum(deaths_percent)) %>% filter(age=="50-59")
   age_50.64$age.strata = "age_50.64"
   age_50.64$age = NULL
   age_50.64$confirmed_cases_percent = NULL
   age_50.64$deaths_percent = NULL
   
-  age_65.79 = ages_readin %>% filter(age %in% c("65-69","70-74","75-79")) %>% group_by(date) %>% mutate(case_pct = sum(confirmed_cases_percent), death_pct = sum(deaths_percent)) %>% filter(age=="65-69")
+  age_65.79 = ages_readin %>% filter(age %in% c("65-69","70-74","75-79")) %>% group_by(date) %>% mutate(cases = sum(confirmed_cases_total), deaths=sum(deaths_total),  case_pct = sum(confirmed_cases_percent), death_pct = sum(deaths_percent)) %>% filter(age=="65-69")
   age_65.79$age.strata = "age_65.79"
   age_65.79$age = NULL
   age_65.79$confirmed_cases_percent = NULL
   age_65.79$deaths_percent = NULL
   
-  age_80. = ages_readin %>% filter(age %in% "80+") %>% group_by(date) %>% mutate(case_pct = sum(confirmed_cases_percent), death_pct = sum(deaths_percent)) %>% filter(age=="80+")
+  age_80. = ages_readin %>% filter(age %in% "80+") %>% group_by(date) %>% mutate(cases = sum(confirmed_cases_total), deaths=sum(deaths_total),  case_pct = sum(confirmed_cases_percent), death_pct = sum(deaths_percent)) %>% filter(age=="80+")
   age_80.$age.strata = "age_80."
   age_80.$age = NULL
   age_80.$confirmed_cases_percent = NULL
@@ -90,6 +90,8 @@ latimes_age_readin <- function(){
   ages_pct <- rbind(age_0.18, age_19.49, age_50.64, age_65.79, age_80.) %>% arrange(date) %>% as.data.frame()
   ages_pct$age.strata <- as.factor(ages_pct$age.strata)
   ages_pct$date <- as.Date(ages_pct$date)
+  ages_pct$confirmed_cases_total <- NULL
+  ages_pct$deaths_total <- NULL
   return(ages_pct)
 }
 
