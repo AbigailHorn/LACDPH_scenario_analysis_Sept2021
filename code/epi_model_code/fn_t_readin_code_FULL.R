@@ -99,7 +99,7 @@ Alpha_y_chr <- alpha_t_readin$Alpha_y
 assign("Alpha1",Alpha1)
 assign("Alpha2", Alpha2)
 assign("Alpha3", Alpha2*1.2)
-assign("Alpha4", Alpha2*.75) #.7)
+assign("Alpha4", Alpha2*.6) #.75) #.7)
 
 
 Alpha_y <- as.vector(length(Alpha_t))
@@ -116,7 +116,7 @@ Kappa_y_chr <- alpha_t_readin$Kappa_y
 assign("Kappa1",Kappa1)
 assign("Kappa2", Kappa2)
 assign("Kappa3", Kappa2*1.25)
-assign("Kappa4", Kappa2*.8) #75)
+assign("Kappa4", Kappa2*.75)# .8) #75)
 
 Kappa_y <- as.vector(length(Alpha_t))
 for (i in 1:length(Alpha_t)){
@@ -132,7 +132,7 @@ Delta_y_chr <- alpha_t_readin$Delta_y
 assign("Delta1",Delta1)
 assign("Delta2", Delta2)
 assign("Delta3", Delta2*1.1)
-assign("Delta4", Delta2*1.5)#1.5)
+assign("Delta4", Delta2*1.6) #1.5)#1.5)
 
 Delta_y <- as.vector(length(Alpha_t))
 for (i in 1:length(Alpha_t)){

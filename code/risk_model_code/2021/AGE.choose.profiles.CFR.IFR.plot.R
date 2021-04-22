@@ -47,11 +47,11 @@ CFR.choose.profile.plot <- function(is.CFR, Profile, freq.PREV.q, CFR.OUT){
   ### PLOT
   #####################
   
-  longnames <- c("Profile 2: 0-18|BMI<30|~Comorb|~Smoker",
-                 "Profile 7: 19-49|BMI<30|~Comorb|~Non Smoker",
-                 "Profile 8: 50-64|BMI<30|~Comorb|~Smoker",
-                 "Profile 33: 65-79|BMI<30|Comorb|~Smoker",
-                 "Profile 34: 80+|BMI<30|Comorb|~Smoker"
+  longnames <- c("Profile 2: 0-18|BMI<30|NoComorb|NonSmoker",
+                 "Profile 7: 19-49|BMI<30|NoComorb|NonSmoker",
+                 "Profile 8: 50-64|BMI<30|NoComorb|NonSmoker",
+                 "Profile 33: 65-79|BMI<30|Comorb|NonSmoker",
+                 "Profile 34: 80+|BMI<30|Comorb|NonSmoker"
   )
   
   #longnames <- as.character(unique(TEST.melt$Profile))

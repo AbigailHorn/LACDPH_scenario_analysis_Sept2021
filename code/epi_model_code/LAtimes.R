@@ -33,11 +33,24 @@ latimes_readin <- function(){
   cases$date <- as.Date(cases$date)
   cases <- cases %>% filter(date > "2020-02-29") %>% arrange(date)
   
+  # smooth the outlier in new deaths over preceding 2 weeks
+  D.max.at <- which(cases$D_new>500)
+  D.max.cap <- 200
+  to.smooth.14 <- (cases$D_new[D.max.at] - D.max.cap)/14
+  cases$D_new[D.max.at] <- D.max.cap
+  cases$D_new[c((D.max.at-14):(D.max.at-1))] <- cases$D_new[c((D.max.at-14):(D.max.at-1))] + to.smooth.14
+  
+  # recalculate cumulative after smoothing new D
+  for (i in 2:nrow(cases)){
+    cases$D[i] <- cases$D[i-1] + cases$D_new[i]
+  }
+  
+  # join I and D with H and Q
   la_data <- left_join(cases, hospital, by="date", keep=FALSE)
   #la_data[is.na(la_data)] <- 0
   
-  la_data$I_detect_new = zoo::rollmean(la_data$I_detect_new, k = 7, fill = NA, align = 'right') %>% round(digits=0)
-  la_data$D_new = zoo::rollmean(la_data$D_new, k = 7, fill = NA, align = 'right') %>% round(digits=0)
+  # la_data$I_detect_new = zoo::rollmean(la_data$I_detect_new, k = 7, fill = NA, align = 'right') %>% round(digits=0)
+  # la_data$D_new = zoo::rollmean(la_data$D_new, k = 7, fill = NA, align = 'right') %>% round(digits=0)
   
   return(la_data)
 }
