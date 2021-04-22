@@ -96,15 +96,13 @@ data.FULL$age_80. <- NULL
 data.FULL$Age <- factor(data.FULL$Age, levels =  c("0-18", "19-49", "50-64", "65-79", "80+"))
 
 data.FULL$BMI <- "Blank"
-data.FULL$BMI[data.FULL$obese_0BMI.24==1] <- "BMI<25"
-data.FULL$BMI[data.FULL$obese_1BMI25.29==1] <- "25<BMI<30"
-data.FULL$BMI[data.FULL$obese_2BMI30.34==1] <- "30<BMI<35"
-data.FULL$BMI[data.FULL$obese_3BMI.35==1] <- "BMI>35"
-data.FULL$obese_0BMI.24 <- NULL
-data.FULL$obese_1BMI25.29 <- NULL
-data.FULL$obese_2BMI30.34 <- NULL
-data.FULL$obese_3BMI.35 <- NULL
-data.FULL$BMI <- factor(data.FULL$BMI, levels =  c("BMI<25", "25<BMI<30", "30<BMI<35", "BMI>35"))
+data.FULL$BMI[data.FULL$obese_0BMI.30==1] <- "BMI<30"
+data.FULL$BMI[data.FULL$obese_1BMI30.40==1] <- "30<BMI<40"
+data.FULL$BMI[data.FULL$obese_2BMI40.==1] <- "BMI>40"
+data.FULL$obese_0BMI.30 <- NULL
+data.FULL$obese_1BMI30.40 <- NULL
+data.FULL$obese_2BMI40. <- NULL
+data.FULL$BMI <- factor(data.FULL$BMI, levels =  c("BMI<30", "30<BMI<40", "BMI>40"))
 
 data.FULL$smoke2 <- "Blank"
 data.FULL$smoke2[data.FULL$smoker==1] <- "Smoker"

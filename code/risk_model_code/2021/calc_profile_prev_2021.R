@@ -8,7 +8,7 @@
 n_profiles = n_profiles
 X.mat = X.mat
 Pop.prev.matrix = as.matrix(pop.prev.2021)
-SIGMA = SIGMA_update
+SIGMA = SIGMA
 
 #########################################################################################################
 ### Calculate frequency of each profile in LAC population
@@ -26,10 +26,12 @@ Pop.prev.matrix.inflate[,"age_80."] = .1
 Pop.prev.matrix.inflate[,"age_65.79"] = .12
 Pop.prev.matrix.inflate[,"age_50.64"] = .18
 Pop.prev.matrix.inflate[,"age_19.49"] = Pop.prev.matrix.inflate[,"age_19.49"] -.0675
-Pop.prev.matrix.inflate
+Pop.prev.matrix.inflate[,"obese_0BMI.30"] = .61
+Pop.prev.matrix.inflate[,"obese_1BMI30.40"] = .31
+Pop.prev.matrix.inflate[,"obese_2BMI40."] = .08
 
 n_samples = 100000
-sample.pop.df <- matrix(0, nrow=n_samples, ncol=11)
+sample.pop.df <- matrix(0, nrow=n_samples, ncol=ncol(X.mat))
 
 ## Select only samples with 1 age and 1 obesity category
 idx=1
@@ -56,7 +58,9 @@ sample.pop.df %>% filter(age_19.49==1) %>% nrow()/1e5
 sample.pop.df %>% filter(age_50.64==1) %>% nrow()/1e5
 sample.pop.df %>% filter(age_65.79==1) %>% nrow()/1e5
 sample.pop.df %>% filter(age_80.==1) %>% nrow()/1e5
-sample.pop.df %>% filter(obese_0BMI.24==1) %>% nrow()/1e5
+sample.pop.df %>% filter(obese_0BMI.30==1) %>% nrow()/1e5
+sample.pop.df %>% filter(obese_1BMI30.40==1) %>% nrow()/1e5
+sample.pop.df %>% filter(obese_2BMI40.==1) %>% nrow()/1e5
 
 ### Count population prevalence of profiles (much faster with as.matrix())
 profiles <- X.mat
@@ -81,8 +85,7 @@ write.csv(profile.cnt.freq, file = path(data.dir, "risk_model_2021/profile.cnt.f
 TEST <- profile.cnt.freq %>% filter(age_80.==1)
 sum(TEST$`LA County`)
 
-# kable(profile.cnt.freq) %>%
-#   kable_styling(bootstrap_options = "striped", full_width = F)
+# formattable(profile.cnt.freq)
 
 #########################################################################################################
 ### OUTPUTS
