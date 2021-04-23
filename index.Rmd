@@ -370,34 +370,34 @@ Delta_density
 
 ```{r}
 R0_density
-Rt1_density
-Rt3_density
+# Rt1_density
+# Rt3_density
 
 #if (print.output==TRUE){
   pdf(file = path(output.density.dir, "R0_density.pdf"), width=5, height =5)
   R0_density
   dev.off()
   
-  pdf(file = path(output.density.dir, "Rt1_density.pdf"), width=5, height =5)
-  Rt1_density
-  dev.off()
-  
-  pdf(file = path(output.density.dir, "Rt3_density.pdf"), width=5, height =5)
-  Rt3_density
-  dev.off()
+  # pdf(file = path(output.density.dir, "Rt1_density.pdf"), width=5, height =5)
+  # Rt1_density
+  # dev.off()
+  # 
+  # pdf(file = path(output.density.dir, "Rt3_density.pdf"), width=5, height =5)
+  # Rt3_density
+  # dev.off()
 #}
 
 ```
 
 ### $r(t)$
 ```{r}
-r1_density
+#r1_density
 r2_density
 
 #if (print.output==TRUE){
-  pdf(file = path(output.density.dir, "r1_density.pdf"), width=5, height =5)
-  r1_density
-  dev.off()
+  # pdf(file = path(output.density.dir, "r1_density.pdf"), width=5, height =5)
+  # r1_density
+  # dev.off()
   
   pdf(file = path(output.density.dir, "r2_density.pdf"), width=5, height =5)
   r2_density
@@ -410,16 +410,16 @@ r2_density
 ### $\alpha(t)$
 ```{r}
 Alpha_density
-Alpha4_density
+#Alpha4_density
 
 #if (print.output==TRUE){
   pdf(file = path(output.density.dir, "Alpha1_density.pdf"), width=5, height =5)
   Alpha_density
   dev.off()
   
-  pdf(file = path(output.density.dir, "Alpha4_density.pdf"), width=5, height =5)
-  Alpha4_density
-  dev.off()
+  # pdf(file = path(output.density.dir, "Alpha4_density.pdf"), width=5, height =5)
+  # Alpha4_density
+  # dev.off()
 #}
 
 ```
@@ -428,16 +428,16 @@ Alpha4_density
 ### $\kappa(t)$
 ```{r}
 Kappa_density
-Kappa4_density
+#Kappa4_density
 
 #if (print.output==TRUE){
   pdf(file = path(output.density.dir, "Kappa1_density.pdf"), width=5, height =5)
   Kappa_density
   dev.off()
   
-  pdf(file = path(output.density.dir, "Kappa4_density.pdf"), width=5, height =5)
-  Kappa4_density
-  dev.off()
+  # pdf(file = path(output.density.dir, "Kappa4_density.pdf"), width=5, height =5)
+  # Kappa4_density
+  # dev.off()
 #}
 
 ```
@@ -446,16 +446,16 @@ Kappa4_density
 ### $\delta(t)$
 ```{r}
 Delta_density
-Delta4_density
+#Delta4_density
 
 #if (print.output==TRUE){
   pdf(file = path(output.density.dir, "Delta1_density.pdf"), width=5, height =5)
   Delta_density
   dev.off()
   
-  pdf(file = path(output.density.dir, "Delta4_density.pdf"), width=5, height =5)
-  Delta4_density
-  dev.off()
+  # pdf(file = path(output.density.dir, "Delta4_density.pdf"), width=5, height =5)
+  # Delta4_density
+  # dev.off()
 #}
 
 ```
