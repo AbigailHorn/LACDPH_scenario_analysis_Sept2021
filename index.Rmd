@@ -279,9 +279,9 @@ ABC.density$Rt2 <- ABC.density$V1 * ABC.density$V9  # June-July 2020
 ABC.density$Rt3 <- ABC.density$V1 * ABC.density$V14 # Nov-Dec 2020
 ABC.density$Rt4 <- ABC.density$V1 * ABC.density$V14*1.2 # Dec.25.2020 -Jan.20.2021
 ABC.density$Rt5 <- ABC.density$V1 * ABC.density$V14*.52 # Jan 20 - Feb 2021
-ABC.density$Alpha4 <- ABC.density$V11 * 0.7
-ABC.density$Kappa4 <- ABC.density$V12 * 0.85
-ABC.density$Delta4 <- ABC.density$V10 * 1.4
+ABC.density$Alpha4 <- ABC.density$V11 * 0.6
+ABC.density$Kappa4 <- ABC.density$V12 * 0.75
+ABC.density$Delta4 <- ABC.density$V10 * 1.5
 ##############################################################################################
 
 ABC.density = ABC.density
@@ -325,27 +325,27 @@ r2_density <- plot_prior_posterior(ABC.density=ABC.density, PAR=PAR, PAR.name=PA
 PAR = "V6"
 PAR.name = "Alpha(t) March - April 2020"
 PAR.mean = Alpha1
-PAR.sd = 0.004
+PAR.sd = 0.01
 Alpha_density <- plot_prior_posterior(ABC.density=ABC.density, PAR=PAR, PAR.name=PAR.name, PAR.mean=PAR.mean, PAR.sd=PAR.sd)
 #Alpha_density
 
 PAR = "Alpha4"
 PAR.name = "Alpha(t) Oct 2020 - Jan 2021"
 PAR.mean = Alpha2*.7
-PAR.sd = 0.004
+PAR.sd = 0.01
 Alpha4_density <- plot_prior_posterior(ABC.density=ABC.density, PAR=PAR, PAR.name=PAR.name, PAR.mean=PAR.mean, PAR.sd=PAR.sd)
 #Alpha2_density
 
 PAR = "Kappa4"
 PAR.name = "Kappa(t) Oct 2020 - Jan 2021"
 PAR.mean = Kappa2*.8
-PAR.sd = 0.004
+PAR.sd = 0.01
 Kappa4_density <- plot_prior_posterior(ABC.density=ABC.density, PAR=PAR, PAR.name=PAR.name, PAR.mean=PAR.mean, PAR.sd=PAR.sd)
 #Kappa4_density
 
-PAR = "V5"
+PAR = "Delta4"
 PAR.name = "Delta(t) Oct 2020 - Jan 2021"
-PAR.mean = Delta1
+PAR.mean = Delta2*1.5
 PAR.sd = .01
 Delta4_density <- plot_prior_posterior(ABC.density=ABC.density, PAR=PAR, PAR.name=PAR.name, PAR.mean=PAR.mean, PAR.sd=PAR.sd)
 Delta4_density

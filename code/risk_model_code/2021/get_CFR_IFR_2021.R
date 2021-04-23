@@ -91,8 +91,19 @@ get.CFR.IFR.profiles <- function(ABC.out.mat=ABC.out.mat, time.steps=time.steps,
     IFR.OUT[[t]] <- IFR.CI.t
   } # end over times i
   
-  CFR.OUT <- do.call(cbind, CFR.OUT)    
+  limit.1 <- function(DF){
+    for (i in 1:nrow(DF)){
+      for (j in 1:ncol(DF)){
+        if (DF[i,j]>1) DF[i,j]=1
+      }
+    }
+    return(DF)
+  }
+  
+  CFR.OUT <- do.call(cbind, CFR.OUT)
+  CFR.OUT <- limit.1(CFR.OUT)
   IFR.OUT <- do.call(cbind, IFR.OUT)
+  IFR.OUT <- limit.1(IFR.OUT)
   
   # ### SANITY CHECKS: take weighted average of frequency of each profile and CFR, should equal population-average CFR
   # sum(CFR.OUT[,"CFR.2020-05-15"]*freq.OUT[,"freq.I.2020-05-15"])
@@ -172,6 +183,7 @@ get.CFR.CI.table <- function(n.times, CFR.OUT, data.FULL){
     CFR.all[[t]] <- CFR.date.CI
   }
   CFR.all <- do.call(cbind, CFR.all)
+  
   
   ## Add descriptive variables
   CFR.all.OUT <- cbind(data.FULL[,1],data.FULL[,c("Age","BMI","Smoker","Comorbidity")],data.FULL[,2],CFR.all)
