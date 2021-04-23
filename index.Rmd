@@ -601,11 +601,11 @@ ymax=NULL
 plot.out.H.I <- plot.out.compartmental(traj.CI = traj.CI, endDatePlot = endDatePlot)
 
 #if (print.output==TRUE){
-  pdf(file = path(output.dir, "epi_model_output/curr_infect_TOGETHER.pdf"),width=5, height =5)
+  pdf(file = path(output.dir, "epi_model_output/curr_infect_TOGETHER.pdf"),width=7, height = 7)
   plot.out.H.I[[2]]
   dev.off()
   
-  pdf(file = path(output.dir, "epi_model_output/curr_healthcare_TOGETHER.pdf"), width=5, height =5)
+  pdf(file = path(output.dir, "epi_model_output/curr_healthcare_TOGETHER.pdf"), width=7, height = 7)
   plot.out.H.I[[1]]
   dev.off()
 #}
