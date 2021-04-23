@@ -563,11 +563,11 @@ CFR_plot <- CFR.IFR.plots.out[[1]]
 IFR_plot <- CFR.IFR.plots.out[[2]]
 
 #if (print.output==TRUE){
-  pdf(file = path(output.dir, "epi_model_output/CFR_plot.pdf"), width=10, height =10)
+  pdf(file = path(output.dir, "epi_model_output/CFR_plot.pdf"), width=5, height =5)
   CFR_plot
   dev.off()
   
-  pdf(file = path(output.dir, "epi_model_output/IFR_plot.pdf"), width=10, height =10)
+  pdf(file = path(output.dir, "epi_model_output/IFR_plot.pdf"), width=5, height =5)
   IFR_plot
   dev.off()
 #}
@@ -601,11 +601,11 @@ ymax=NULL
 plot.out.H.I <- plot.out.compartmental(traj.CI = traj.CI, endDatePlot = endDatePlot)
 
 #if (print.output==TRUE){
-  pdf(file = path(output.dir, "epi_model_output/curr_infect_TOGETHER.pdf"), width=10, height =10)
+  pdf(file = path(output.dir, "epi_model_output/curr_infect_TOGETHER.pdf"),width=5, height =5)
   plot.out.H.I[[2]]
   dev.off()
   
-  pdf(file = path(output.dir, "epi_model_output/curr_healthcare_TOGETHER.pdf"), width=10, height =10)
+  pdf(file = path(output.dir, "epi_model_output/curr_healthcare_TOGETHER.pdf"), width=5, height =5)
   plot.out.H.I[[1]]
   dev.off()
 #}
@@ -670,6 +670,11 @@ plot.out.H.I[[2]]
 
 ```{r}
 ggplotly(plot.I.new)
+
+  pdf(file = path(output.dir, "epi_model_output/Inew.pdf"), width=5, height =5)
+  plot.I.new
+  dev.off()
+
 ```
 
 
@@ -713,7 +718,7 @@ plot.out.H.I[[1]]
 ggplotly(plot.Dnew)
 
 #if (print.output==TRUE){
-  pdf(file = path(output.dir, "epi_model_output/Dnew.pdf"), width=10, height =10)
+  pdf(file = path(output.dir, "epi_model_output/Dnew.pdf"), width=5, height =5)
   plot.Dnew
   dev.off()
 #}
@@ -916,7 +921,7 @@ Probability of hospitalization given infection
 ```{r}
 
 #if (print.output==TRUE){
-  pdf(file = path(output.dir, "risk_model_output/plot.HI.AGES.pdf"), width=10, height =10)
+  pdf(file = path(output.dir, "risk_model_output/plot.HI.AGES.pdf"), width=5, height =5)
   plot.HI.AGES
   dev.off()
 #}
@@ -932,7 +937,7 @@ Probability of ICU admission given hospitalization
 ```{r}
 
 #if (print.output==TRUE){
-  pdf(file = path(output.dir, "risk_model_output/plot.QH.AGES.pdf"), width=10, height =10)
+  pdf(file = path(output.dir, "risk_model_output/plot.QH.AGES.pdf"), width=5, height =5)
   plot.QH.AGES
   dev.off()
 #}
@@ -948,7 +953,7 @@ Probability of death given ICU admission
 ```{r}
 
 #if (print.output==TRUE){
-  pdf(file = path(output.dir, "risk_model_output/plot.DQ.AGES.pdf"), width=10, height =10)
+  pdf(file = path(output.dir, "risk_model_output/plot.DQ.AGES.pdf"), width=5, height =5)
   plot.DQ.AGES
   dev.off()
 #}
@@ -964,7 +969,7 @@ Probability of death given infection
 ```{r}
 
 #if (print.output==TRUE){
-  pdf(file = path(output.dir, "risk_model_output/plot.DI.AGES.pdf"), width=10, height =10)
+  pdf(file = path(output.dir, "risk_model_output/plot.DI.AGES.pdf"), width=5, height =5)
   plot.DI.AGES
   dev.off()
 #}
@@ -1076,13 +1081,13 @@ plot.IFR.AGES = plot.CFR.IFR.ages(is.CFR=0, CFR.OUT=IFR.OUT, freq.OUT=freq.OUT, 
 
 
 #if (print.output==TRUE){
-  pdf(file = path(output.dir, "risk_model_output/plot.CFR.AGES.pdf"), width=10, height =10)
+  pdf(file = path(output.dir, "risk_model_output/plot.CFR.AGES.pdf"), width=5, height =5)
   plot.CFR.AGES
   dev.off()
 #}
   
 #if (print.output==TRUE){
-  pdf(file = path(output.dir, "risk_model_output/plot.IFR.AGES.pdf"), width=10, height =10)
+  pdf(file = path(output.dir, "risk_model_output/plot.IFR.AGES.pdf"), width=5, height =5)
   plot.IFR.AGES
   dev.off()
 #}  
@@ -1117,13 +1122,13 @@ plot.CFR.choose = CFR.choose.profile.plot(is.CFR=1, Profile=Profile, freq.PREV.q
 plot.IFR.choose = CFR.choose.profile.plot(is.CFR=0, Profile=Profile, freq.PREV.q=freq.PREV.q, CFR.OUT=IFR.OUT)
 
 #if (print.output==TRUE){
-  pdf(file = path(output.dir, "risk_model_output/plot.CFR.choose.pdf"), width=10, height =10)
+  pdf(file = path(output.dir, "risk_model_output/plot.CFR.choose.pdf"), width=7, height =7)
   plot.CFR.choose
   dev.off()
 #}
   
 #if (print.output==TRUE){
-  pdf(file = path(output.dir, "risk_model_output/plot.IFR.choose.pdf"), width=10, height =10)
+  pdf(file = path(output.dir, "risk_model_output/plot.IFR.choose.pdf"),  width=7, height =7)
   plot.IFR.choose
   dev.off()
 #}  
@@ -1191,7 +1196,7 @@ source(AGE.D.data.model)
 
 plot.D.age <- plot.freq.age.D(freq.age.D=freq.age.D)
  
-  pdf(file = path(output.dir, "risk_model_output/plot.D.age.pdf"), width=10, height =10)
+  pdf(file = path(output.dir, "risk_model_output/plot.D.age.pdf"),width=5, height =5)
   plot.D.age
   dev.off()
 
@@ -1205,7 +1210,7 @@ var = "Age"
 var.name <- "Age"
 p.prev.age.stage.DATES <- grouped.var.figs(full.data=full.data, var=var, var.name=var.name, times.dates=times.dates)
 
-  pdf(file = path(output.dir, "risk_model_output/p.prev.age.stage.DATES.pdf"), width=10, height =10)
+  pdf(file = path(output.dir, "risk_model_output/p.prev.age.stage.DATES.pdf"), width=5, height =5)
   p.prev.age.stage.DATES
   dev.off()
 
