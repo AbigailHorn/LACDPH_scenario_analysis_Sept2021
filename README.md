@@ -1,4 +1,4 @@
-Code for reproducing analysis in paper: "**Risk-stratified COVID-19 policy analysis for Los Angeles County through an integrated risk and stochastic epidemiological model**". Content can be viewed at (https://abigailhorn.github.io/COVID-Risks-LA/).
+Code for reproducing analysis in paper: "**Risk-stratified COVID-19 policy analysis for Los Angeles County through an integrated risk and stochastic epidemiological model**". Content can be viewed at (https://abigailhorn.github.io/COV2-LA/).
 
 Abigail L. Horn^1^, Lai Jiang^1^, Faith Washburn^2^, Emil Hvitfeldt^1^, Kayla de la Haye^1^, William Nicholas^2^, Paul Simon^2^, Wendy Cozen^1^, Neeraj Sood^3^, \& David V. Conti^1^ 
 
