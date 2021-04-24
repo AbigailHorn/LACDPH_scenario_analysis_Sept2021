@@ -29,7 +29,7 @@ Alpha2 <- .15 #.09
 Kappa2 <- .2 #.185
 Delta2 <- .55 #.575 #.8 
 
-stdev <- 0.003 #0.003
+stdev <- 0.01 #0.003
 prior.Delta1 <- c("normal",Delta1, stdev)#.001) #0.01)
 prior.Alpha1 <- c("normal",Alpha1, stdev)#.002) #0.003)
 prior.Kappa1 <- c("normal",Kappa1, stdev)#.002) # 0.03)
