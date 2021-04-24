@@ -141,4 +141,9 @@ for (i in 1:length(Alpha_t)){
   Delta_y[i] = get(Delta_y_chr[i])
 }
 
+## Output for paper table
+stdev=0.01
+Alpha_output <- paste0("$~N(",Alpha_y,",",stdev,")$")
+Kappa_output <- paste0("$~N(",Kappa_y,",",stdev,")$")
+Delta_output <- paste0("$~N(",Delta_y,",",stdev,")$")
 
