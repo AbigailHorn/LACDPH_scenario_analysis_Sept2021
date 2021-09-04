@@ -83,7 +83,7 @@ knitr::opts_chunk$set(
   )
 
 code.dir=here("code/")
-data.dir=here("data/")
+data.dir=here("data/LACDPH_Sept21")
 data.update.dir=here("data/risk_update")
 result.dir = here("results/")
 fig.dir = here("figs/")
@@ -99,7 +99,7 @@ code.scenarios.dir=here("code/scenarios_code/")
 ```{r options, include=FALSE}
 print.output <- TRUE
 days.truncate <- 0
-endDatePlotGlobal <- as.Date("2021-03-01")
+endDatePlotGlobal <- as.Date("2022-01-01")
 no_obs <- as.numeric(endDatePlotGlobal - as.Date("2020-03-01")) + 1
 ```
 
@@ -224,6 +224,9 @@ plot.all.variables.curr.date
 ```
 
 
+
+
+
 # Epidemic model
 
 <br>
@@ -261,7 +264,7 @@ if (print.output==TRUE) write.csv(tables.out[[1]], file = path(output.dir, "epi_
 
 as.datatable(formattable(tables.out[[4]]), rownames = TRUE, options = list(pageLength = 10, autoWidth = TRUE))
 
-if (print.output==TRUE) write.csv(tables.out[[4]], file = path(output.dir, "epi_model_output/CFR_IFR_table.csv"))
+if (print.output==TRUE) write.csv(tables.out[[4]], file = path(output.dir, "epi_model_output/CFR_IFR_table_pct.csv"))
 ```
 
 
@@ -754,6 +757,7 @@ Read in input data
 ## Data coming from: Guan et al. 2020, Petrilli et al. 2020
 psi.mat <- read.csv(path(data.dir, "risk_model_2021/psi.mat.csv"), sep=",", header=TRUE,row.names = 1)
 
+
 # psi.mat["age_80.",] <- rep(2.75,times=3) # c(1,.5,1)
 # psi.mat["age_65.79",] <- rep(1.8, times=3)
 # psi.mat["age_50.64",] <- rep(.85, times=3)
@@ -761,6 +765,9 @@ psi.mat <- read.csv(path(data.dir, "risk_model_2021/psi.mat.csv"), sep=",", head
 psi.mat["age_80.",] <- rep(2.9,times=3) # c(1,.5,1)
 psi.mat["age_65.79",] <- rep(1.9, times=3)
 psi.mat["age_50.64",] <- rep(.95, times=3)
+
+RR.age.table <- exp(psi.mat) %>% round(digits=2)
+write.csv(RR.age.table, path(output.dir, "risk_model_output/RR.age.table.csv"))
 
 ###############################################################################################################
 ## Get profile matrix X.mat
@@ -1150,7 +1157,7 @@ plot.IFR.choose
 
 
 
-## CFR and IFR tables{.tabset}
+## CFR and IFR tables {.tabset}
 
 CFR and IFR tables for all profiles
 
@@ -1160,8 +1167,8 @@ CFR.CI.table <- get.CFR.CI.table(n.times=n.times, CFR.OUT=CFR.OUT, data.FULL=dat
 IFR.CI.table <- get.CFR.CI.table(n.times=n.times, CFR.OUT=IFR.OUT, data.FULL=data.FULL)
 
 #if (print.output==TRUE) {
-  write.csv(CFR.CI.table, file = path(output.dir, "risk_model_output/CFR.tables/CFR.csv"))
-  write.csv(IFR.CI.table, file = path(output.dir, "risk_model_output/CFR.tables/IFR.csv"))
+  write.csv(CFR.CI.table, file = path(output.dir, "risk_model_output/CFR.tables/CFR_pct.csv"))
+  write.csv(IFR.CI.table, file = path(output.dir, "risk_model_output/CFR.tables/IFR_pct.csv"))
 #}
 
 ```
@@ -1264,5 +1271,20 @@ p.prev.BMI.stage.DATES
 ```{r}
 p.prev.smoking.stage.DATES
 ```
+
+### All together
+
+```{r}
+p <- (p.prev.age.stage.DATES + p.prev.comorbidity.stage.DATES) / (p.prev.BMI.stage.DATES + p.prev.smoking.stage.DATES) +  plot_annotation(tag_levels = 'A') & 
+  theme(plot.tag = element_text(size = 15))
+
+p
+
+pdf(file = path(output.dir, "risk_model_output/risk.stages.DATES.pdf"), width=12, height =12)
+p
+dev.off()
+```
+
+
 
 {-}

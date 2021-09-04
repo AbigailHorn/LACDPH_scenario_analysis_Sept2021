@@ -3,30 +3,36 @@
 ########################################################################################
 ## PLOTTING ALL FACETED FUNCTION
 ########################################################################################
-plot.model.data.all <- function(traj.CI, data.in, init.date.data, date.offset.4plot, time.steps.4plot, vars.to.plot) {
+
+data.in = la_data
+time.steps.plot = as.numeric(as.Date("2022-03-31") - as.Date(init.date.data))
+date.offset.4plot = 15
+
+plot.model.data.all(traj.CI=traj.plot, data.in=data.in, time.steps.plot=time.steps.plot, vars.to.plot=vars.to.plot)
+  
+plot.model.data.all <- function(traj.CI, data.in, time.steps.plot, vars.to.plot) {
 
   ## Select only more recent dates
-  init.date <- init.date.data
-  init.date <- as.Date(init.date) #as.Date(lubridate::ydm(init.date))
-  startDatePlot <- init.date - date.offset.4plot #15
+  startDatePlot <- as.Date(init.date)
   endDatePlot <- startDatePlot + time.steps.4plot # - 40
-  traj.CI <- traj.CI %>% dplyr::filter(date > startDatePlot) %>% dplyr::filter(date < endDatePlot)
+  traj.CI <- traj.CI %>% dplyr::filter(date < endDatePlot) #dplyr::filter(date > startDatePlot-1) %>% dplyr::filter(date < endDatePlot)
 
   ## Filter to variables selected to plot
   traj.CI <- traj.CI %>% dplyr::filter(state.name==c(vars.to.plot))
 
   if(!is.null(data.in)){
-    ## ALIGN DATES: DATA
-    # no_obs <- nrow(data.in)
-    # step <- 0:(no_obs-1)
-    # date <- init.date + step
-    # data.date <- cbind(date,data.in)
-    # rownames(data.date) <- step
-    data.date <- data.in
-
-    ## Select only more recent dates
-    data.date <- data.date %>% dplyr::filter(date > startDatePlot)
-    data <- reshape2::melt(data.date, measure.vars = c(2:ncol(data.date)), variable.name = "state.name")
+    data <- data.in %>% dplyr::filter(date > startDatePlot-1)
+    data <- reshape2::melt(data, measure.vars = c(2:ncol(data)), variable.name = "state.name")
+    dataCum = data %>% filter(state.name %in% c("D", "Idetectcum")) %>% group_by(state.name) %>% mutate(value = value - dplyr::first(value)) %>% as.data.frame()
+    dataNew = data %>% filter(state.name %in% c("D", "Idetectcum") == FALSE) %>% as.data.frame()
+    data=as.data.frame(rbind(dataCum,dataNew))
+    
+    # rebase0 <- function(data,thisVar){
+    #   data_thisVar = data %>% dplyr::filter(state.name %in% thisVar) %>% mutate(value = value-min(value))
+    #   return(rbind(data_thisVar,data))
+    # }
+    # data = rebase0(data, "D")
+    # data = rebase0(data,"Idetectcum")
   }
 
   ## PLOTTING
@@ -75,38 +81,6 @@ plot.model.data.all <- function(traj.CI, data.in, init.date.data, date.offset.4p
                          "R"
   )
 
-  # longnames <- c("Susceptible",
-  #                "Infected (Total Est.)",
-  #                "Cumul. Infected (Total Est.)",
-  #                "Infected (Obs.)",
-  #                "Cumul. Infected (Obs.)",
-  #                "In Hospital",
-  #                "New in Hospital",
-  #                "Cumul. Hospital",
-  #                "In ICU",
-  #                "Cumul. ICU",
-  #                "In Ventilation",
-  #                "Cumul. Ventilation",
-  #                "Cumul. Dead",
-  #                "New Deaths",
-  #                "Recovered")
-
-  # names(longnames) <- c("S",
-  #                       "Itot",
-  #                       "Itotcum",#
-  #                       "I",
-  #                       "Idetectcum",
-  #                       "Htot",
-  #                       "H_new",
-  #                       "Htotcum",
-  #                       "Q",
-  #                       "Qcum", #
-  #                       "V",
-  #                       "Vcum",
-  #                       "D",
-  #                       "D_new",
-  #                       "R")
-
   p <- p + facet_wrap(~state.name, labeller = labeller(state.name = longnames), scales = "free_y")
   p <- p + geom_ribbon(data = traj.CI.area, aes_string(x = "date", ymin = "low", ymax = "up", alpha = "CI", fill = "state.name"),show.legend = c(fill=FALSE))
   p <- p + geom_line(data = traj.CI.line, aes_string(x = "date", y = "value", linetype = "variable", colour = "state.name"), size = 1, show.legend = c(colour=FALSE))
@@ -123,7 +97,7 @@ plot.model.data.all <- function(traj.CI, data.in, init.date.data, date.offset.4p
   }
 
   p <- p + theme_bw() + theme(legend.position = "top", legend.box = "horizontal")
-  p <- p + scale_x_date(limits = as.Date(c(startDatePlot,endDatePlot)), date_breaks = "1 month" , date_labels = "%d-%b-%y")
+  p <- p + scale_x_date(limits = as.Date(c(startDatePlot-31,endDatePlot)), date_breaks = "1 month" , date_labels = "%d-%b-%y")
   p <- p + theme(axis.text.x = element_text(angle = 90),
                  strip.text.x = element_text(size = 12, face = "bold"))
   p <- p + ylab("Numbers in Compartments") + xlab(NULL)
@@ -744,7 +718,7 @@ plot.param.t <- function(ABC_out=ABC_out, endDatePlot=endDatePlot){
   
   # ASSIGN ADDITIONAL R0 VALUES
   R0.redux4.CI <- R0.redux3.CI*1.2
-  R0.redux5.CI <- R0.redux3.CI*0.52
+  R0.redux5.CI <- R0.redux3.CI*0.65
 
   # GET ORDER OF VALUES
   fn_t_readin_path <- path(data.dir, "fn_t_readin.csv")

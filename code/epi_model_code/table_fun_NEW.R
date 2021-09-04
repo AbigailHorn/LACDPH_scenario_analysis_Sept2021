@@ -110,7 +110,7 @@ get.PAR.tables <- function(ABC_out, traj.CI, date.in){
   
   # ASSIGN ADDITIONAL R0 VALUES
   R0.redux4.CI <- R0.redux3.CI*1.2
-  R0.redux5.CI <- R0.redux3.CI*0.52
+  R0.redux5.CI <- R0.redux3.CI*0.65
   
   # GET ORDER OF VALUES
   fn_t_readin_path <- path(data.dir, "fn_t_readin.csv")
@@ -306,6 +306,8 @@ get.PAR.tables <- function(ABC_out, traj.CI, date.in){
     }
     posterior.CI.out <- traj.CI %>% filter(date %in% as.Date(date.in))
     posterior.CI.out <- posterior.CI.out %>% filter(state.name==state.name.in) %>% select(-c(state.name,N)) %>% mutate_if(is.numeric, round, digits=round.by)
+    CFR.pct <- select(posterior.CI.out, -date)*100
+    posterior.CI.out <- cbind(posterior.CI.out$date, CFR.pct)
     return(posterior.CI.out)
   }
   
@@ -319,7 +321,7 @@ get.PAR.tables <- function(ABC_out, traj.CI, date.in){
   rownames(IFR.format) <- date.in
   colnames(IFR.format) <- "IFR"
   CFR.IFR.table <- cbind(CFR.format,IFR.format)
-  colnames(CFR.IFR.table) <- c("CFR mean (95% CI)", "IFR mean (95% CI)")
+  colnames(CFR.IFR.table) <- c("CFR % mean (95% CI)", "IFR % mean (95% CI)")
   
   
   #################################################

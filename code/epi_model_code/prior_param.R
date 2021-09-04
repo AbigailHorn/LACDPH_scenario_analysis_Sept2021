@@ -9,10 +9,9 @@ R0_redux1 <- .21
 R0_redux2 <- .33
 R0_redux3 <- .55 #.575#.6 #65
 
-prior.R0.redux1 <- c("unif", R0_redux1 - 0.05, R0_redux1 + 0.05)
-prior.R0.redux2 <- c("unif", R0_redux2 - 0.05, R0_redux2 + 0.05)
-prior.R0.redux3 <- c("unif", R0_redux3 - 0.05, R0_redux3 + 0.05)
-
+prior.R0.redux1 <- c("unif", R0_redux1 - 0.05, R0_redux1 + 0.05) # .11
+prior.R0.redux2 <- c("unif", R0_redux2 - 0.05, R0_redux2 + 0.05) # .11
+prior.R0.redux3 <- c("unif", R0_redux3 - 0.05, R0_redux3 + 0.05) #.12
 
 # prior.r1 <- c("unif",0.1, 0.75) #c("unif", 0.13, 0.16)
 # prior.r2 <- c("unif",0.1, 0.75) #c("unif",0.12, 0.14) #0.30

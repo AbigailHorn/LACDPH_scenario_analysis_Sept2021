@@ -15,7 +15,6 @@ for(i in 1:n_profiles){
 }
 AGE.idx <- as.data.frame(AGE.idx)
 
-
 ## Get min and max
 
 Pr.AGE = cbind(Pr.OUT,AGE.idx)
@@ -67,6 +66,14 @@ Pr.AGES$date <- as.Date(Pr.AGES$date)
 Pr.AGES$stat <- as.factor(Pr.AGES$stat)
 Pr.AGES$type <- as.factor(Pr.AGES$type)
 Pr.AGES <- spread(Pr.AGES, stat, value)
+
+## Printing mean, up_95, low_95 for each age group over time
+# Ages.names <- colnames(X.mat)[1:5] %>% as.data.frame()
+# colnames(Ages.names) <- "age_group"
+# Ages.names$AGE.idx <- as.factor(c(1:5))
+# illness.probs.ages <- left_join(Ages.names, Pr.AGES, by="AGE.idx")
+# illness.probs.ages$AGE.idx <- NULL
+# write.csv(illness.probs.ages, file = path("/Users/abigailhorn/Google Drive/UCDavis/illness_progression_probs/ages_illness_probs.csv"))
 
 #########################################################################################################
 ## PLOT

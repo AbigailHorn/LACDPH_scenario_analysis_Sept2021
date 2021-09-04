@@ -116,18 +116,18 @@ N <- S + E + I + A + H + Q + D + R
 ## Core compartments
 initial(S) <- S_ini
 initial(E) <- E_ini
-initial(I) <- 0
-initial(A) <- 0
-initial(H) <- 0
-initial(Q) <- 0
-initial(D) <- 0
-initial(R) <- 0
+initial(I) <- I_ini
+initial(A) <- A_ini
+initial(H) <- 313-52
+initial(Q) <- 52
+initial(D) <- 0 #24347
+initial(R) <- R_ini
 initial(V) <- 0
-initial(Htot) <- 0
+initial(Htot) <- 313
 
 ## Cumulative counts
-initial(Idetectcum) <- 0
-initial(Itotcum) <- 0
+initial(Idetectcum) <- 0 #1244170
+initial(Itotcum) <- 0 #1500*3
 initial(Htotcum) <- 0
 initial(Qcum) <- 0
 initial(Vcum) <- 0
@@ -140,6 +140,9 @@ initial(Vcum) <- 0
 ### Initial conditions
 S_ini <- user(1e7) # susceptibles
 E_ini <- user(10) # infected
+I_ini <- user()
+A_ini <- user()
+R_ini <- user()
 
 ### Parameters - random
 #d_EI <- runif(3, 8)
@@ -155,56 +158,63 @@ d_QR <- user(7)    #days in ICU before recovery (given recovery)
 #d_V <- user(3)     #days on ventilator (within ICU)
 
 ### Parameters - weighted average risk probabilities: input from JAM + population prevalence
-#Alpha <- user(0.14)   #probability infected (I) requires hospitalization (vs. recovers)
-#Kappa <- user(0.23)   #probability hospitalized (H) requires ICU (vs. recovers)
-#Delta <- user(0.06)   #probability ICU (Q) patient dies
-p_QV <- user(0.667)   #probability in ICU and requires ventilation
-#r <- user(0.25)
+Alpha <- user(0.076) #user(0.042)   #probability infected (I) requires hospitalization (vs. recovers)
+Kappa <- user(0.2)   #probability hospitalized (H) requires ICU (vs. recovers)
+Delta <- user(0.38)   #probability ICU (Q) patient dies
+p_QV <- user(0.2)   #probability in ICU and requires ventilation
+r <- user(0.3)
 
 ### Other variables
-#R0 <- user(2.2)     #Current estimates from other models
+#Rt <- user()     #Current estimates from other models
 
 ### Parameters - calculated from inputs
-#Br <- R0 * ( 1 / ( (r/ ((Alpha/d_IH) + ((1-Alpha)/d_IR)))  + (1-r)*d_IR ))
+Beta <- Rt * ( 1 / ( (r/ ((Alpha/d_IH) + ((1-Alpha)/d_IR)))  + (1-r)*d_IR ))
 
 
 
-#########################################
-### TIME VARYING BETA (INTERPOLATION) ###
-#########################################
+# #########################################
+# ### TIME VARYING BETA (INTERPOLATION) ###
+# #########################################
+# 
 
-Beta <- interpolate(Beta_t, Beta_y,"linear")
+Rt <- interpolate(Rt_t, Rt_y,"linear")
+Rt_t[] <- user()
+Rt_y[] <- user()
+dim(Rt_t) <- user()
+dim(Rt_y) <- user()
 
-Beta_t[] <- user()# R0 * ((Alpha/d_IH)+((1-Alpha)/d_IR))
-Beta_y[] <- user()
-dim(Beta_t) <- user()
-dim(Beta_y) <- user()
-
-####################################################
-### TIME VARYING PROBABILITIES OF SEVERE ILLNESS ###
-####################################################
-
-Alpha <- interpolate(Alpha_t, Alpha_y,"linear")
-Alpha_t[] <- user()# R0 * ((Alpha/d_IH)+((1-Alpha)/d_IR))
-Alpha_y[] <- user()
-dim(Alpha_t) <- user()
-dim(Alpha_y) <- user()
-
-Kappa <- interpolate(Kappa_t, Kappa_y,"linear")
-Kappa_t[] <- user()# R0 * ((Alpha/d_IH)+((1-Alpha)/d_IR))
-Kappa_y[] <- user()
-dim(Kappa_t) <- user()
-dim(Kappa_y) <- user()
-
-Delta <- interpolate(Delta_t, Delta_y,"linear")
-Delta_t[] <- user()# R0 * ((Alpha/d_IH)+((1-Alpha)/d_IR))
-Delta_y[] <- user()
-dim(Delta_t) <- user()
-dim(Delta_y) <- user()
-
-r <- interpolate(r_t, r_y,"linear")
-r_t[] <- user()
-r_y[] <- user()
-dim(r_t) <- user()
-dim(r_y) <- user()
+# Beta <- interpolate(Beta_t, Beta_y,"linear")
+# 
+# Beta_t[] <- user()# R0 * ((Alpha/d_IH)+((1-Alpha)/d_IR))
+# Beta_y[] <- user()
+# dim(Beta_t) <- user()
+# dim(Beta_y) <- user()
+# 
+# ####################################################
+# ### TIME VARYING PROBABILITIES OF SEVERE ILLNESS ###
+# ####################################################
+# 
+# Alpha <- interpolate(Alpha_t, Alpha_y,"linear")
+# Alpha_t[] <- user()# R0 * ((Alpha/d_IH)+((1-Alpha)/d_IR))
+# Alpha_y[] <- user()
+# dim(Alpha_t) <- user()
+# dim(Alpha_y) <- user()
+# 
+# Kappa <- interpolate(Kappa_t, Kappa_y,"linear")
+# Kappa_t[] <- user()# R0 * ((Alpha/d_IH)+((1-Alpha)/d_IR))
+# Kappa_y[] <- user()
+# dim(Kappa_t) <- user()
+# dim(Kappa_y) <- user()
+# 
+# Delta <- interpolate(Delta_t, Delta_y,"linear")
+# Delta_t[] <- user()# R0 * ((Alpha/d_IH)+((1-Alpha)/d_IR))
+# Delta_y[] <- user()
+# dim(Delta_t) <- user()
+# dim(Delta_y) <- user()
+# 
+# r <- interpolate(r_t, r_y,"linear")
+# r_t[] <- user()
+# r_y[] <- user()
+# dim(r_t) <- user()
+# dim(r_y) <- user()
 

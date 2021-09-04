@@ -71,6 +71,17 @@ plot.CFR.IFR.ages <- function(is.CFR, CFR.OUT, freq.OUT, X.mat){
   CFR.AGES$type <- as.factor(CFR.AGES$type)
   CFR.AGES <- spread(CFR.AGES, stat, value)
   
+  ## Printing mean, up_95, low_95 for each age group over time
+  ## Need to set is.IFR=0 and CFR.OUT=IFR.OUT
+  # Ages.names <- colnames(X.mat)[1:5] %>% as.data.frame()
+  # colnames(Ages.names) <- "age_group"
+  # Ages.names$AGE.idx <- as.factor(c(1:5))
+  # IFR.ages <- left_join(Ages.names, CFR.AGES, by="AGE.idx")
+  # IFR.ages$AGE.idx <- NULL
+  # write.csv(IFR.ages, file = path("/Users/abigailhorn/Google Drive/UCDavis/illness_progression_probs/ages_IFR.csv"))
+
+  
+  
   #########################################################################################################
   ## PLOT
   

@@ -153,6 +153,8 @@ get.CFR.IFR.profiles <- function(ABC.out.mat=ABC.out.mat, time.steps=time.steps,
 
 get.CFR.CI.table <- function(n.times, CFR.OUT, data.FULL){
   
+  CFR.OUT <- CFR.OUT*100
+  
   ## Function to put variables in median (low_95, up_95) format
   var.format <- function(var.CI){
     posterior.CI.FORMAT <- function(var.CI){
@@ -194,5 +196,12 @@ get.CFR.CI.table <- function(n.times, CFR.OUT, data.FULL){
   return(CFR.all.OUT)
 }
 
-
+# IFR.table <- read.csv(path(output.dir, "risk_model_output/CFR.tables/IFR.csv"), sep=",", header=TRUE,row.names = 1)
+# view(IFR.table)
+# 
+# table2 <- IFR.table
+# for (i in 1:nrow(table1)){  table2[i,] <- IFR.table[i,] %>% mutate_if(is.character, function(x) unlist(strsplit(x, " "))[1])}
+# table2 <- as.data.frame(apply(table2, 2, as.numeric)) 
+# #rownames(table1) <- rownames(AKD_table)
+# table1$dates <- as.Date(rownames(AKD_table))
 

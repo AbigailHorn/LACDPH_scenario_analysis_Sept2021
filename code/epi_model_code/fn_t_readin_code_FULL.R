@@ -8,26 +8,11 @@ fn_t_readin = as.data.frame(read.csv(fn_t_readin_path, sep=",",stringsAsFactors 
 
 ##########################################################################################
 ## Evaluate Beta_t, Beta_y from readin
-start_time <- 45
-Beta_t_dates <- as.Date(fn_t_readin$Beta_t)
-Beta_t_dates[1] <- Beta_t_dates[1]-start_time
-Beta_t <- round(as.numeric(Beta_t_dates - as.Date("2020-03-01")) + start_time)
-
-mu_y_chr <- fn_t_readin$Beta_y
-assign("mu.0",1)
-assign("mu.1", R0_redux1)
-assign("mu.2", R0_redux2)
-assign("mu.3", R0_redux3) #0.31)
-assign("mu.4", 1.25*R0_redux3)
-#assign("mu.4",(mu.3+mu.2)/2)
-assign("mu.5", 0.65*R0_redux3)
-
-mu_y <- as.vector(length(Beta_t))
-for (i in 1:length(Beta_t)){
-  mu_y[i] = get(mu_y_chr[i])
-}
-R0_y <- R0*mu_y
-
+start_time <- 0
+start_date <- as.Date("2021-06-01")
+Rt_t <- as.Date(fn_t_readin$t)
+Rt_t <- round(as.numeric(Rt_t - start_date) + start_time)
+Rt_y <- fn_t_readin$Rt
 
 ## Get Beta_y as a function of R0, R0_redux, r, and Alpha
 
@@ -141,9 +126,4 @@ for (i in 1:length(Alpha_t)){
   Delta_y[i] = get(Delta_y_chr[i])
 }
 
-## Output for paper table
-stdev=0.01
-Alpha_output <- paste0("$~N(",Alpha_y,",",stdev,")$")
-Kappa_output <- paste0("$~N(",Kappa_y,",",stdev,")$")
-Delta_output <- paste0("$~N(",Delta_y,",",stdev,")$")
 
