@@ -43,9 +43,9 @@ University of Southern California
 
 ## Scenarios and parameters evaluated
 
-- Final presentation available at **[this link](https://docs.google.com/presentation/d/1qhLLlo9a5K3Huhsd3gwkPwudSSIKHuTL/edit?usp=sharing&ouid=114012102276366140518&rtpof=true&sd=true)**.
+- Final presentation available at **[this link](https://docs.google.com/presentation/d/1xce9_9hA0HB3X0BtOI6iiMYpf30TJYjF/edit?usp=sharing&ouid=114012102276366140518&rtpof=true&sd=true)**.
 
-- Scenarios, parameter values, and sources found at **[this link](https://docs.google.com/spreadsheets/d/1PBXMgmchEnlYTxcWHqZR4cuUcvKFO5LuW4G3CbSLXOo/edit#gid=490110439)**.
+- Scenarios, parameter values, and sources found at **[this link](https://docs.google.com/spreadsheets/d/1KwJifu2--O6E6f8eSlbmQIN1H0oeOp90ifC6NM1sER4/edit#gid=1902217321)**.
 
 - Differences in infection, hospitalization, ICU admission, and death rates between vaccinated and unvaccinated populations in LA County from [LACDPH study published in MMWR](https://www.cdc.gov/mmwr/volumes/70/wr/mm7034e5.htm#contribAff).
 

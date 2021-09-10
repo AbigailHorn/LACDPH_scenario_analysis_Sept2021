@@ -1,52 +1,66 @@
 
 data.in = la_data
-colnames(data.in) = c("date","1_Infected","I_detect_new","4_Died","4_New_Deaths","2_In_Hospital","3_In_ICU")
+colnames(data.in) = c("date","1_Infected","1_New_Infections","4_Died","4_New_Deaths","2_In_Hospital","3_In_ICU")
 
 ################################################################################
 ## CUMULATIVE COUNTS
 
-time.steps.plot = 365
+#traj.CI = traj.0
+traj.CI = traj.base
+scenario.IDs = c("EveryoneVax.05_Rt.1.00","NooneVax_Rt.1.00")
 
+######## Vars to plot
 vars.to.plot.scenario = c("Idetectcum", "Htotcum", "Qcum", "D")
-
-traj.CI = traj.0
-
 traj.CI <- traj.CI %>% dplyr::filter(state.name %in% vars.to.plot.scenario) 
 
-#traj.CI <- traj.CI %>% dplyr::filter(scenario %in% c("EveryoneVax_Efficacy.850", "EveryoneVax_Efficacy.725", "EveryoneVax_Efficacy.600")) 
-#traj.CI <- traj.CI %>% dplyr::filter(scenario %in% c("NooneVax_Isolate.00", "NooneVax_Isolate.10", "NooneVax_Isolate.20")) 
-traj.CI <- traj.CI %>% dplyr::filter(scenario %in% c("EveryoneVax_Efficacy.850", "NooneVax_Isolate.10"))
+######## Scenarios to plot
+#scenario.IDs = c("NooneVax_Rt.0.80","NooneVax_Rt.0.90","NooneVax_Rt.1.00","NooneVax_Rt.1.10","NooneVax_Rt.1.20")
+#scenario.IDs = c("NooneVax_Isolate.00","NooneVax_Rt.1.00","NooneVax_Isolate.20")
+#scenario.IDs = c("EveryoneVax.05_Rt.0.80","EveryoneVax.05_Rt.0.90","EveryoneVax.05_Rt.1.00","EveryoneVax.05_Rt.1.10","EveryoneVax.05_Rt.1.20")
+#scenario.IDs = "EveryoneVax.05_Rt.1.00"
+#scenario.IDs = "NooneVax_Rt.1.00"
 
+traj.CI <- traj.CI %>% dplyr::filter(scenario %in% scenario.IDs)
 
 traj.CI$state.name <- recode_factor(traj.CI$state.name, 
                                     Idetectcum = "1_Infected",
                                     Htotcum = "2_Hospitalized",
                                     Qcum = "3_ICU",
                                     D = "4_Died")
-
 vars.to.plot.relevel = c("1_Infected", "2_Hospitalized", "3_ICU", "4_Died")
-plot.SCENARIOS(traj.CI=traj.CI, data.in=data.in, time.steps.plot=time.steps.plot, vars.to.plot=vars.to.plot.relevel, add.capacity = FALSE)
+
+time.steps.plot = 365
+plot.SCENARIOS(traj.CI=traj.CI, data.in=data.in, time.steps.plot=365, vars.to.plot=vars.to.plot.relevel, add.capacity = FALSE)
 
 
 ################################################################################
 ## PEAK COUNTS
-vars.to.plot.scenario = c("Itot", "Htot", "Q", "D_new")
-traj.CI = traj.0
+
+#traj.CI = traj.0
+traj.CI = traj.base
+scenario.IDs = c("EveryoneVax.05_Rt.1.00","NooneVax_Rt.1.00")
+
+######## Vars to plot
+vars.to.plot.scenario = c("I_detect_new", "Htot", "Q", "D_new")
 traj.CI <- traj.CI %>% dplyr::filter(state.name %in% vars.to.plot.scenario) 
 
-#traj.CI <- traj.CI %>% dplyr::filter(scenario %in% c("EveryoneVax_Efficacy.850", "EveryoneVax_Efficacy.725", "EveryoneVax_Efficacy.600")) 
-traj.CI <- traj.CI %>% dplyr::filter(scenario %in% c("NooneVax_Isolate.00", "NooneVax_Isolate.10", "NooneVax_Isolate.20")) 
-#traj.CI <- traj.CI %>% dplyr::filter(scenario %in% c("EveryoneVax_Efficacy.850", "NooneVax_Isolate.10"))
+######## Scenarios to plot
+#scenario.IDs = c("NooneVax_Rt.0.80","NooneVax_Rt.0.90","NooneVax_Rt.1.00","NooneVax_Rt.1.10","NooneVax_Rt.1.20")
+#scenario.IDs = c("NooneVax_Isolate.00","NooneVax_Rt.1.00","NooneVax_Isolate.20")
+#scenario.IDs = c("EveryoneVax.05_Rt.0.80","EveryoneVax.05_Rt.0.90","EveryoneVax.05_Rt.1.00","EveryoneVax.05_Rt.1.10","EveryoneVax.05_Rt.1.20")
+#scenario.IDs = "EveryoneVax.05_Rt.1.00"
+#scenario.IDs = "NooneVax_Rt.1.00"
+
+traj.CI <- traj.CI %>% dplyr::filter(scenario %in% scenario.IDs)
 
 traj.CI$state.name <- recode_factor(traj.CI$state.name, 
-                                    Itot = "1_Now_Infected",
+                                    I_detect_new = "1_New_Infections",
                                     Htot = "2_In_Hospital",
                                     Q = "3_In_ICU",
                                     D_new = "4_New_Deaths")
+vars.to.plot.relevel = c("1_New_Infections", "2_In_Hospital", "3_In_ICU", "4_New_Deaths")
 
-
-vars.to.plot.relevel = c("1_Now_Infected", "2_In_Hospital", "3_In_ICU", "4_New_Deaths")
-plot.SCENARIOS(traj.CI=traj.CI, data.in=data.in, time.steps.plot=time.steps.plot, vars.to.plot=vars.to.plot.relevel, add.capacity=TRUE)
+plot.SCENARIOS(traj.CI=traj.CI, data.in=data.in, time.steps.plot=100, vars.to.plot=vars.to.plot.relevel, add.capacity=TRUE)
 
 ################################################################################
 ## FUNCTION
