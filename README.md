@@ -49,7 +49,7 @@ University of Southern California
 
 - Differences in infection, hospitalization, ICU admission, and death rates between vaccinated and unvaccinated populations in LA County from [LACDPH study published in MMWR](https://www.cdc.gov/mmwr/volumes/70/wr/mm7034e5.htm#contribAff).
 
-- Values of $R_{t,eff}$ for LA County overall based on **(CovidEstim)[https://covidestim.org/us/CA/06037]** estimates. 
+- Values of Rt,eff for LA County overall based on (CovidEstim)[https://covidestim.org/us/CA/06037] estimates. 
 
 <br>
 
